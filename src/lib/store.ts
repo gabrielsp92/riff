@@ -122,7 +122,11 @@ export const useTransportStore = create<TransportState>((set, get) => ({
       return { subdivision: SUBDIVISIONS[(i + 1) % SUBDIVISIONS.length] };
     }),
   cycleAccent: () =>
-    set((s) => ({ accentBeat: (s.accentBeat % s.meter[0]) + 1 })),
+    set((s) => {
+      // Cycles 1 → 2 → … → meter[0] → 0 (off, flat click) → 1 …
+      const next = s.accentBeat === 0 ? 1 : s.accentBeat === s.meter[0] ? 0 : s.accentBeat + 1;
+      return { accentBeat: next };
+    }),
   setClickSound: (clickSound) => set({ clickSound }),
   toggleTrainer: () =>
     set((s) => ({ trainer: { ...s.trainer, enabled: !s.trainer.enabled } })),
