@@ -34,6 +34,7 @@ export function SheetViewerDesktop({ sheetId }: { sheetId: string }) {
   const sheet = useSheetsStore((s) => s.getSheet(sheetId));
   const openList = useSheetsNavStore((s) => s.openList);
   const openEditor = useSheetsNavStore((s) => s.openEditor);
+  const openViewer = useSheetsNavStore((s) => s.openViewer);
 
   const bodyRef = useRef<HTMLDivElement>(null);
   const [activeChordId, setActiveChordId] = useState<string | null>(null);
@@ -41,6 +42,19 @@ export function SheetViewerDesktop({ sheetId }: { sheetId: string }) {
   const currentSectionLabel = useCurrentSectionLabel(bodyRef, sheet?.sections ?? []);
 
   const chordIds = useMemo(() => (sheet ? uniqueChordIds(sheet) : []), [sheet]);
+
+  // Delete/duplicate (sheets-icd-v2.md §6.9, Assumption P) — same behavior
+  // as SheetViewerMobile.tsx.
+  const handleDelete = () => {
+    if (!window.confirm(`Delete "${sheet?.title ?? "this sheet"}"? This can't be undone.`)) return;
+    useSheetsStore.getState().removeSheet(sheetId);
+    openList();
+  };
+
+  const handleDuplicate = () => {
+    const newId = useSheetsStore.getState().duplicateSheet(sheetId);
+    if (newId) openViewer(newId);
+  };
 
   // Default the right panel's chord detail to the sheet's first chord once
   // it's known, so the panel isn't blank before the user taps anything.
@@ -225,6 +239,18 @@ export function SheetViewerDesktop({ sheetId }: { sheetId: string }) {
             }`}
           >
             AUTOSCROLL {autoscroll.enabled ? (autoscroll.paused ? "· PAUSED" : "· ON") : "· OFF"}
+          </button>
+          <button
+            onClick={handleDuplicate}
+            className="border-2 border-ink px-3 py-[10px] text-left font-sans text-xs font-extrabold tracking-[.08em] hover:bg-accent-100 active:bg-accent-200"
+          >
+            DUPLICATE
+          </button>
+          <button
+            onClick={handleDelete}
+            className="border-2 border-ink px-3 py-[10px] text-left font-sans text-xs font-extrabold tracking-[.08em] text-accent-700 hover:bg-accent-100 active:bg-accent-200"
+          >
+            DELETE
           </button>
         </div>
 

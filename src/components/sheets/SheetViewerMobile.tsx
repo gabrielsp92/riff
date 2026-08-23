@@ -26,6 +26,7 @@ export function SheetViewerMobile({ sheetId }: { sheetId: string }) {
   const sheet = useSheetsStore((s) => s.getSheet(sheetId));
   const openList = useSheetsNavStore((s) => s.openList);
   const openEditor = useSheetsNavStore((s) => s.openEditor);
+  const openViewer = useSheetsNavStore((s) => s.openViewer);
 
   const bodyRef = useRef<HTMLDivElement>(null);
   const [activeChordId, setActiveChordId] = useState<string | null>(null);
@@ -33,6 +34,21 @@ export function SheetViewerMobile({ sheetId }: { sheetId: string }) {
   const currentSectionLabel = useCurrentSectionLabel(bodyRef, sheet?.sections ?? []);
 
   const chordIds = useMemo(() => (sheet ? uniqueChordIds(sheet) : []), [sheet]);
+
+  // Delete/duplicate (sheets-icd-v2.md §6.9, Assumption P). Delete is guarded
+  // by a plain window.confirm — no new modal dependency, matching this
+  // codebase's zero-modal-library footprint. Duplicate is non-destructive and
+  // needs no confirmation; it lands the user directly on the fresh copy.
+  const handleDelete = () => {
+    if (!window.confirm(`Delete "${sheet?.title ?? "this sheet"}"? This can't be undone.`)) return;
+    useSheetsStore.getState().removeSheet(sheetId);
+    openList();
+  };
+
+  const handleDuplicate = () => {
+    const newId = useSheetsStore.getState().duplicateSheet(sheetId);
+    if (newId) openViewer(newId);
+  };
 
   const persistenceBanner = persistenceError && (
     <div className="border-b-2 border-divider bg-neutral-200 px-[18px] py-2 font-mono-rf text-[10px] tracking-[.1em] text-neutral-700">
@@ -137,6 +153,18 @@ export function SheetViewerMobile({ sheetId }: { sheetId: string }) {
           }`}
         >
           AUTOSCROLL {autoscroll.enabled ? (autoscroll.paused ? "· PAUSED" : "· ON") : "· OFF"}
+        </button>
+        <button
+          onClick={handleDuplicate}
+          className="bg-bg px-[14px] py-3 text-left font-sans text-xs font-extrabold tracking-[.08em] hover:bg-accent-100 active:bg-accent-200"
+        >
+          DUPLICATE
+        </button>
+        <button
+          onClick={handleDelete}
+          className="bg-bg px-[14px] py-3 text-left font-sans text-xs font-extrabold tracking-[.08em] text-accent-700 hover:bg-accent-100 active:bg-accent-200"
+        >
+          DELETE
         </button>
       </div>
 
