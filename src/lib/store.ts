@@ -384,6 +384,46 @@ reportPersistenceError = (message) => {
   useSheetsStore.setState({ persistenceError: message });
 };
 
+// ---------------------------------------------------------------------------
+// Sheets tool sub-navigation (Epic 03, T3a) — sheets-icd.md §6.
+// There's no URL router inside a tool in this app; Sheets is the first tool
+// that needs internal sub-navigation (list → viewer → editor). Consistent
+// with this app's existing "state per tool persists across tool switches"
+// convention — switching to another tool and back does not reset `screen`.
+// ---------------------------------------------------------------------------
+
+export type SheetsScreen =
+  | { name: "list" }
+  | { name: "viewer"; sheetId: string }
+  | { name: "editor"; sheetId: string | null }; // null = creating a new sheet, not yet persisted
+
+interface SheetsNavState {
+  screen: SheetsScreen;
+  openList: () => void;
+  openViewer: (sheetId: string) => void;
+  openEditor: (sheetId: string | null) => void;
+}
+
+export const useSheetsNavStore = create<SheetsNavState>((set) => ({
+  screen: { name: "list" },
+  openList: () => set({ screen: { name: "list" } }),
+  openViewer: (sheetId) => set({ screen: { name: "viewer", sheetId } }),
+  openEditor: (sheetId) => set({ screen: { name: "editor", sheetId } }),
+}));
+
+// ---------------------------------------------------------------------------
+// Sheets list search/filter (Epic 03, T3a) — sheets-icd.md §7. Pure
+// function, no store dependency, safe to call on every keystroke.
+// ---------------------------------------------------------------------------
+
+export function filterSheets(sheets: Sheet[], query: string): Sheet[] {
+  const q = query.trim().toLowerCase();
+  if (q === "") return sheets;
+  return sheets.filter(
+    (sheet) => sheet.title.toLowerCase().includes(q) || (sheet.key ?? "").toLowerCase().includes(q)
+  );
+}
+
 interface TransportState {
   bpm: number;
   meter: [number, number];
