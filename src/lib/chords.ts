@@ -48,6 +48,15 @@ const CHORD_DICTIONARY: Record<string, DictionaryEntry> = {
   g7: { guitarFrets: ["3", "2", "0", "0", "0", "1"], pianoKeys: ["G3", "B3", "D4", "F4"] },
 };
 
+// Canonical-cased chord ids known to the dictionary, sourced directly from
+// its keys so this can never drift out of sync (sheets-icd-v2.md §6.4) —
+// feeds `ChordPicker`'s autocomplete suggestions. Dictionary keys are stored
+// lowercase; canonical casing is "first letter uppercase, rest unchanged"
+// (e.g. "e5" -> "E5", "am" -> "Am"), matching every entry's natural spelling.
+export const KNOWN_CHORD_IDS: string[] = Object.keys(CHORD_DICTIONARY).map(
+  (key) => key.charAt(0).toUpperCase() + key.slice(1)
+);
+
 /**
  * Dictionary lookup + explicit `"unknown"` fallback — never throws, never
  * returns a blank-looking shape for an unrecognized chord.

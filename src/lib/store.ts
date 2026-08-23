@@ -175,6 +175,7 @@ interface SheetsState {
   updateSheet: (id: string, patch: Partial<Omit<Sheet, "id" | "createdAt">>) => void; // no-op + no error if id not found (personal-app tolerance, mirrors useSetlistStore.updateSong)
   removeSheet: (id: string) => void; // no-op if id not found
   getSheet: (id: string) => Sheet | undefined;
+  duplicateSheet: (id: string) => string | null; // returns the new sheet's id, or null if id not found (no-op, mirrors removeSheet's tolerance) — sheets-icd-v2.md §6.10
 }
 
 export interface NewSheetInput {
@@ -373,6 +374,63 @@ export const useSheetsStore = create<SheetsState>()(
       removeSheet: (id) =>
         set((s) => ({ sheets: s.sheets.filter((sheet) => sheet.id !== id) })),
       getSheet: (id) => get().sheets.find((sheet) => sheet.id === id),
+      duplicateSheet: (id) => {
+        const original = get().sheets.find((sheet) => sheet.id === id);
+        if (!original) return null;
+
+        // Section.id and Annotation.id must never be reused from the
+        // source (sheets-icd-v2.md §6.10) — Section.id is documented as
+        // implicitly unique (Epic 01 ICD §2), so two sheets sharing one
+        // would be a landmine for any future cross-sheet section lookup.
+        const sectionIdMap = new Map<string, string>();
+        const sections: Section[] = original.sections.map((section) => {
+          const newSectionId = crypto.randomUUID();
+          sectionIdMap.set(section.id, newSectionId);
+          return {
+            id: newSectionId,
+            label: section.label,
+            lines: section.lines.map((line) => ({
+              lyrics: line.lyrics,
+              chordPlacements: line.chordPlacements.map((cp) => ({ ...cp })),
+            })),
+          };
+        });
+
+        const annotations: Annotation[] = original.annotations.map((annotation) => ({
+          ...annotation,
+          id: crypto.randomUUID(),
+          target: {
+            ...annotation.target,
+            // Remap to the copy's own new Section.id so the copy's
+            // annotations still correctly reference the copy's sections.
+            sectionId: sectionIdMap.get(annotation.target.sectionId) ?? annotation.target.sectionId,
+            range: annotation.target.range ? ([...annotation.target.range] as [number, number]) : undefined,
+          },
+        }));
+
+        const now = new Date().toISOString();
+        const newId = crypto.randomUUID();
+        const copy: Sheet = {
+          id: newId,
+          title: `${original.title} (Copy)`,
+          key: original.key,
+          bpm: original.bpm,
+          timeSignature: { ...original.timeSignature },
+          capo: original.capo,
+          transposeSemitones: original.transposeSemitones,
+          sections,
+          chordOverrides: original.chordOverrides.map((o) => ({
+            chordId: o.chordId,
+            guitarFrets: [...o.guitarFrets],
+            pianoKeys: [...o.pianoKeys],
+          })),
+          annotations,
+          createdAt: now,
+          updatedAt: now,
+        };
+        set((s) => ({ sheets: [...s.sheets, copy] }));
+        return newId;
+      },
     }),
     {
       name: "riff-sheets-v1",
@@ -485,6 +543,282 @@ export function filterSheets(sheets: Sheet[], query: string): Sheet[] {
     (sheet) => sheet.title.toLowerCase().includes(q) || (sheet.key ?? "").toLowerCase().includes(q)
   );
 }
+
+// ---------------------------------------------------------------------------
+// tokenizeWords (Epic 05, T5a) — sheets-icd-v2.md §6.6. Pure word-boundary
+// tokenizer for a line's lyrics — the basis of "tap a word to attach a
+// chord" in the chord-placement editor.
+// ---------------------------------------------------------------------------
+
+export interface WordToken {
+  text: string;
+  charIndex: number; // start index of the word within the line's lyrics
+}
+
+export function tokenizeWords(lyrics: string): WordToken[] {
+  return Array.from(lyrics.matchAll(/\S+/g)).map((m) => ({ text: m[0], charIndex: m.index as number }));
+}
+
+// ---------------------------------------------------------------------------
+// Sheet editor draft state (Epic 05, T5a) — sheets-icd-v2.md §6.1. Decoupled
+// from `useSheetsStore` until `save()`: every mutator here only ever touches
+// local `draft` state, never the persisted store, so cancelling/discarding
+// an in-progress edit never has a side effect on `useSheetsStore`.
+// ---------------------------------------------------------------------------
+
+export type EditableSheet = Omit<Sheet, "id" | "createdAt" | "updatedAt">;
+
+interface SheetEditorState {
+  draft: EditableSheet | null;
+  editingSheetId: string | null; // persisted id if editing an existing sheet; null while creating a new one
+  notFound: boolean; // true if load(sheetId) was called with an id useSheetsStore.getSheet() can't find (post-hydration)
+
+  load: (sheetId: string | null) => void;
+  updateMeta: (
+    patch: Partial<Pick<EditableSheet, "title" | "key" | "bpm" | "timeSignature" | "capo" | "transposeSemitones">>
+  ) => void;
+
+  addSection: (label: string) => string; // returns new Section.id
+  updateSectionLabel: (sectionId: string, label: string) => void;
+  removeSection: (sectionId: string) => void;
+
+  setLineLyrics: (sectionId: string, lineIndex: number, lyrics: string) => void;
+  addLine: (sectionId: string, atIndex?: number) => void; // default: append to end of section
+  removeLine: (sectionId: string, lineIndex: number) => void;
+
+  setChordPlacement: (sectionId: string, lineIndex: number, charIndex: number, chordId: string | null) => void;
+
+  setChordOverride: (chordId: string, guitarFrets: string[], pianoKeys: string[]) => void; // upsert by chordId
+  removeChordOverride: (chordId: string) => void;
+
+  addAnnotation: (annotation: Omit<Annotation, "id">) => string | null; // null (no-op) if type === "note" and content is empty/whitespace
+  updateAnnotation: (id: string, patch: Partial<Omit<Annotation, "id">>) => void;
+  removeAnnotation: (id: string) => void;
+
+  save: () => string; // persists via useSheetsStore.addSheet / .updateSheet; returns the sheet id; does not navigate
+  discard: () => void; // clears draft/editingSheetId/notFound; never touches useSheetsStore
+}
+
+function blankEditableSheet(): EditableSheet {
+  return {
+    title: "",
+    key: undefined,
+    bpm: 120,
+    timeSignature: { beats: 4, unit: 4 },
+    capo: 0,
+    transposeSemitones: 0,
+    sections: [],
+    chordOverrides: [],
+    annotations: [],
+  };
+}
+
+// A fresh deep copy of a persisted Sheet's editable fields — never a live
+// reference, so mutating the draft can never mutate `useSheetsStore` before
+// `save()` (sheets-icd-v2.md §6.1).
+function cloneEditableSheet(sheet: Sheet): EditableSheet {
+  return {
+    title: sheet.title,
+    key: sheet.key,
+    bpm: sheet.bpm,
+    timeSignature: { ...sheet.timeSignature },
+    capo: sheet.capo,
+    transposeSemitones: sheet.transposeSemitones,
+    sections: sheet.sections.map((section) => ({
+      id: section.id,
+      label: section.label,
+      lines: section.lines.map((line) => ({
+        lyrics: line.lyrics,
+        chordPlacements: line.chordPlacements.map((cp) => ({ ...cp })),
+      })),
+    })),
+    chordOverrides: sheet.chordOverrides.map((o) => ({
+      chordId: o.chordId,
+      guitarFrets: [...o.guitarFrets],
+      pianoKeys: [...o.pianoKeys],
+    })),
+    annotations: sheet.annotations.map((a) => ({
+      ...a,
+      target: { ...a.target, range: a.target.range ? ([...a.target.range] as [number, number]) : undefined },
+    })),
+  };
+}
+
+export const useSheetEditorStore = create<SheetEditorState>((set, get) => ({
+  draft: null,
+  editingSheetId: null,
+  notFound: false,
+
+  load: (sheetId) => {
+    if (sheetId === null) {
+      set({ draft: blankEditableSheet(), editingSheetId: null, notFound: false });
+      return;
+    }
+    const found = useSheetsStore.getState().getSheet(sheetId);
+    if (!found) {
+      set({ draft: null, editingSheetId: sheetId, notFound: true });
+      return;
+    }
+    set({ draft: cloneEditableSheet(found), editingSheetId: sheetId, notFound: false });
+  },
+
+  updateMeta: (patch) => set((s) => (s.draft ? { draft: { ...s.draft, ...patch } } : s)),
+
+  addSection: (label) => {
+    const newSection: Section = { id: crypto.randomUUID(), label, lines: [] };
+    set((s) => (s.draft ? { draft: { ...s.draft, sections: [...s.draft.sections, newSection] } } : s));
+    return newSection.id;
+  },
+
+  updateSectionLabel: (sectionId, label) =>
+    set((s) => {
+      if (!s.draft) return s;
+      return {
+        draft: {
+          ...s.draft,
+          sections: s.draft.sections.map((sec) => (sec.id === sectionId ? { ...sec, label } : sec)),
+        },
+      };
+    }),
+
+  removeSection: (sectionId) =>
+    set((s) => {
+      if (!s.draft) return s;
+      return { draft: { ...s.draft, sections: s.draft.sections.filter((sec) => sec.id !== sectionId) } };
+    }),
+
+  // Assumption H (sheets-icd-v2.md §6.1): only clears this line's
+  // chordPlacements + ranged annotations when the text actually changes —
+  // a no-op set (same value) clears nothing.
+  setLineLyrics: (sectionId, lineIndex, lyrics) =>
+    set((s) => {
+      if (!s.draft) return s;
+      const section = s.draft.sections.find((sec) => sec.id === sectionId);
+      const line = section?.lines[lineIndex];
+      if (!section || !line || line.lyrics === lyrics) return s;
+
+      const sections = s.draft.sections.map((sec) => {
+        if (sec.id !== sectionId) return sec;
+        return {
+          ...sec,
+          lines: sec.lines.map((l, i) => (i === lineIndex ? { lyrics, chordPlacements: [] } : l)),
+        };
+      });
+      // Ranged annotations targeting this exact line are no longer
+      // trustworthy against the changed text and are dropped; whole-line
+      // annotations (range omitted) aren't char-anchored and are kept.
+      const annotations = s.draft.annotations.filter((a) => {
+        const targetsThisLine = a.target.sectionId === sectionId && a.target.lineIndex === lineIndex;
+        return !(targetsThisLine && a.target.range !== undefined);
+      });
+      return { draft: { ...s.draft, sections, annotations } };
+    }),
+
+  addLine: (sectionId, atIndex) =>
+    set((s) => {
+      if (!s.draft) return s;
+      const sections = s.draft.sections.map((sec) => {
+        if (sec.id !== sectionId) return sec;
+        const newLine: Line = { lyrics: "", chordPlacements: [] };
+        const lines = [...sec.lines];
+        const insertAt = atIndex === undefined ? lines.length : Math.min(Math.max(0, atIndex), lines.length);
+        lines.splice(insertAt, 0, newLine);
+        return { ...sec, lines };
+      });
+      return { draft: { ...s.draft, sections } };
+    }),
+
+  removeLine: (sectionId, lineIndex) =>
+    set((s) => {
+      if (!s.draft) return s;
+      const sections = s.draft.sections.map((sec) => {
+        if (sec.id !== sectionId) return sec;
+        return { ...sec, lines: sec.lines.filter((_, i) => i !== lineIndex) };
+      });
+      return { draft: { ...s.draft, sections } };
+    }),
+
+  setChordPlacement: (sectionId, lineIndex, charIndex, chordId) =>
+    set((s) => {
+      if (!s.draft) return s;
+      const sections = s.draft.sections.map((sec) => {
+        if (sec.id !== sectionId) return sec;
+        return {
+          ...sec,
+          lines: sec.lines.map((line, i) => {
+            if (i !== lineIndex) return line;
+            const withoutExisting = line.chordPlacements.filter((cp) => cp.charIndex !== charIndex);
+            const chordPlacements =
+              chordId === null
+                ? withoutExisting
+                : [...withoutExisting, { charIndex, chordId }].sort((a, b) => a.charIndex - b.charIndex);
+            return { ...line, chordPlacements };
+          }),
+        };
+      });
+      return { draft: { ...s.draft, sections } };
+    }),
+
+  setChordOverride: (chordId, guitarFrets, pianoKeys) =>
+    set((s) => {
+      if (!s.draft) return s;
+      const exists = s.draft.chordOverrides.some((o) => o.chordId === chordId);
+      const chordOverrides = exists
+        ? s.draft.chordOverrides.map((o) => (o.chordId === chordId ? { chordId, guitarFrets, pianoKeys } : o))
+        : [...s.draft.chordOverrides, { chordId, guitarFrets, pianoKeys }];
+      return { draft: { ...s.draft, chordOverrides } };
+    }),
+
+  removeChordOverride: (chordId) =>
+    set((s) => {
+      if (!s.draft) return s;
+      return { draft: { ...s.draft, chordOverrides: s.draft.chordOverrides.filter((o) => o.chordId !== chordId) } };
+    }),
+
+  // Mirrors importFile's existing runtime rule (Epic 01 ICD §2: `content` is
+  // required at runtime when type === "note") rather than introducing a new
+  // one — never mutates `draft` if that rule is violated.
+  addAnnotation: (annotation) => {
+    if (annotation.type === "note" && !(annotation.content ?? "").trim()) return null;
+    const draft = get().draft;
+    if (!draft) return null;
+    const id = crypto.randomUUID();
+    set({ draft: { ...draft, annotations: [...draft.annotations, { ...annotation, id }] } });
+    return id;
+  },
+
+  updateAnnotation: (id, patch) =>
+    set((s) => {
+      if (!s.draft) return s;
+      return {
+        draft: {
+          ...s.draft,
+          annotations: s.draft.annotations.map((a) => (a.id === id ? { ...a, ...patch } : a)),
+        },
+      };
+    }),
+
+  removeAnnotation: (id) =>
+    set((s) => {
+      if (!s.draft) return s;
+      return { draft: { ...s.draft, annotations: s.draft.annotations.filter((a) => a.id !== id) } };
+    }),
+
+  // No independent clamping/validation here — hands `draft` straight to
+  // useSheetsStore's addSheet/updateSheet, which already enforce every rule
+  // in Epic 01 ICD §2 (sheets-icd-v2.md §6.1).
+  save: () => {
+    const { draft, editingSheetId } = get();
+    if (!draft) return editingSheetId ?? ""; // defensive: save() isn't reachable from the not-found state's UI
+    if (editingSheetId) {
+      useSheetsStore.getState().updateSheet(editingSheetId, draft);
+      return editingSheetId;
+    }
+    return useSheetsStore.getState().addSheet(draft);
+  },
+
+  discard: () => set({ draft: null, editingSheetId: null, notFound: false }),
+}));
 
 interface TransportState {
   bpm: number;

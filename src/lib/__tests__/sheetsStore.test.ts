@@ -250,6 +250,126 @@ describe("useSheetsStore.getSheet", () => {
   });
 });
 
+// ---------------------------------------------------------------------------
+// T5a — duplicateSheet (sheets-icd-v2.md §6.10)
+// ---------------------------------------------------------------------------
+
+describe("useSheetsStore.duplicateSheet", () => {
+  function seedSheetWithAnnotations() {
+    const id = useSheetsStore.getState().addSheet({
+      title: "Original Song",
+      key: "E",
+      bpm: 100,
+      capo: 2,
+      transposeSemitones: 1,
+      chordOverrides: [{ chordId: "E5", guitarFrets: ["0", "2", "2", "x", "x", "x"], pianoKeys: ["E3", "B3"] }],
+      sections: [
+        {
+          id: "sec-a",
+          label: "Verse",
+          lines: [{ lyrics: "hello world", chordPlacements: [{ charIndex: 0, chordId: "E5" }] }],
+        },
+        { id: "sec-b", label: "Chorus", lines: [{ lyrics: "chorus line", chordPlacements: [] }] },
+      ],
+    });
+    // Annotations are appended via updateSheet since addSheet's
+    // NewSheetInput doesn't require pre-existing annotation ids here.
+    useSheetsStore.getState().updateSheet(id, {
+      annotations: [
+        { id: "ann-1", type: "note", target: { sectionId: "sec-a", lineIndex: 0 }, content: "A note" },
+        { id: "ann-2", type: "highlight", target: { sectionId: "sec-b", lineIndex: 0, range: [0, 3] } },
+      ],
+    });
+    return id;
+  }
+
+  it("returns null (no-op) when the id is not found", () => {
+    const before = useSheetsStore.getState().sheets;
+    expect(useSheetsStore.getState().duplicateSheet("does-not-exist")).toBeNull();
+    expect(useSheetsStore.getState().sheets).toEqual(before);
+  });
+
+  it("appends '(Copy)' to the title and copies metadata verbatim", () => {
+    const id = seedSheetWithAnnotations();
+    const newId = useSheetsStore.getState().duplicateSheet(id);
+    expect(newId).not.toBeNull();
+    const copy = useSheetsStore.getState().getSheet(newId!)!;
+    const original = useSheetsStore.getState().getSheet(id)!;
+    expect(copy.title).toBe("Original Song (Copy)");
+    expect(copy.key).toBe(original.key);
+    expect(copy.bpm).toBe(original.bpm);
+    expect(copy.timeSignature).toEqual(original.timeSignature);
+    expect(copy.capo).toBe(original.capo);
+    expect(copy.transposeSemitones).toBe(original.transposeSemitones);
+    expect(copy.chordOverrides).toEqual(original.chordOverrides);
+  });
+
+  it("gives the copy a fresh top-level id and fresh createdAt/updatedAt", () => {
+    const id = seedSheetWithAnnotations();
+    const original = useSheetsStore.getState().getSheet(id)!;
+    const newId = useSheetsStore.getState().duplicateSheet(id)!;
+    const copy = useSheetsStore.getState().getSheet(newId)!;
+    expect(newId).not.toBe(id);
+    expect(copy.id).not.toBe(original.id);
+  });
+
+  it("regenerates every Section.id and Annotation.id — copy and original have completely disjoint ids", () => {
+    const id = seedSheetWithAnnotations();
+    const original = useSheetsStore.getState().getSheet(id)!;
+    const newId = useSheetsStore.getState().duplicateSheet(id)!;
+    const copy = useSheetsStore.getState().getSheet(newId)!;
+
+    const originalSectionIds = new Set(original.sections.map((s) => s.id));
+    const copySectionIds = copy.sections.map((s) => s.id);
+    expect(copySectionIds).toHaveLength(original.sections.length);
+    for (const sid of copySectionIds) expect(originalSectionIds.has(sid)).toBe(false);
+
+    const originalAnnotationIds = new Set(original.annotations.map((a) => a.id));
+    const copyAnnotationIds = copy.annotations.map((a) => a.id);
+    expect(copyAnnotationIds).toHaveLength(original.annotations.length);
+    for (const aid of copyAnnotationIds) expect(originalAnnotationIds.has(aid)).toBe(false);
+  });
+
+  it("remaps each copied annotation's target.sectionId to the copy's own new Section.id", () => {
+    const id = seedSheetWithAnnotations();
+    const original = useSheetsStore.getState().getSheet(id)!;
+    const newId = useSheetsStore.getState().duplicateSheet(id)!;
+    const copy = useSheetsStore.getState().getSheet(newId)!;
+
+    // Original section order is preserved positionally (sec-a, sec-b).
+    const [copySecA, copySecB] = copy.sections;
+    const [origSecA, origSecB] = original.sections;
+    expect(copySecA.label).toBe(origSecA.label);
+    expect(copySecB.label).toBe(origSecB.label);
+
+    const copyNote = copy.annotations.find((a) => a.type === "note")!;
+    const copyHighlight = copy.annotations.find((a) => a.type === "highlight")!;
+    expect(copyNote.target.sectionId).toBe(copySecA.id);
+    expect(copyHighlight.target.sectionId).toBe(copySecB.id);
+    // And every copy annotation's sectionId actually resolves to one of the
+    // copy's own sections — never a stale id from the original.
+    const copySectionIdSet = new Set(copy.sections.map((s) => s.id));
+    for (const a of copy.annotations) expect(copySectionIdSet.has(a.target.sectionId)).toBe(true);
+  });
+
+  it("produces an independent copy — mutating the copy never touches the original", () => {
+    const id = seedSheetWithAnnotations();
+    const newId = useSheetsStore.getState().duplicateSheet(id)!;
+    useSheetsStore.getState().updateSheet(newId, { title: "Mutated Copy" });
+    const original = useSheetsStore.getState().getSheet(id)!;
+    expect(original.title).toBe("Original Song");
+  });
+
+  it("is not idempotent — calling it twice produces two independent copies", () => {
+    const id = seedSheetWithAnnotations();
+    const firstCopyId = useSheetsStore.getState().duplicateSheet(id)!;
+    const secondCopyId = useSheetsStore.getState().duplicateSheet(id)!;
+    expect(firstCopyId).not.toBe(secondCopyId);
+    expect(useSheetsStore.getState().getSheet(firstCopyId)).toBeDefined();
+    expect(useSheetsStore.getState().getSheet(secondCopyId)).toBeDefined();
+  });
+});
+
 describe("useSheetsStore hydration & persistence (T1b)", () => {
   it("becomes hydrated with no persistence error once rehydration completes against a healthy, empty store", async () => {
     mockedIdbGet.mockResolvedValue(undefined);
