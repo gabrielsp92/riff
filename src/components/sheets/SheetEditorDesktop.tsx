@@ -2,11 +2,15 @@
 
 import { useEffect } from "react";
 import { EditableSheet, useSheetEditorStore, useSheetsNavStore, useSheetsStore } from "@/lib/store";
+import { AnnotationEditor, computeChordHighlightRange } from "./AnnotationEditor";
+import { ChordOverrideEditor } from "./ChordOverrideEditor";
+import { ChordPlacementEditor } from "./ChordPlacementEditor";
+import { SectionEditor } from "./SectionEditor";
 
 // Sheet editor, desktop layout (sheets-icd-v2.md §6). Same screen contract as
 // SheetEditorMobile.tsx (see that file's header note for the load()/hydration
-// gating rationale and the T5c-f composition-deferral note) — renders as the
-// two right-hand columns of DesktopShell's grid, same fragment convention
+// gating rationale and the T5h composition notes) — renders as the two
+// right-hand columns of DesktopShell's grid, same fragment convention
 // SheetsDesktop.tsx already uses for its "viewer"/"editor" branches.
 const TIME_SIGNATURE_UNITS = [2, 4, 8, 16];
 
@@ -120,6 +124,55 @@ function MetaForm({ draft }: { draft: EditableSheet }) {
   );
 }
 
+// "Highlight this chord" one-tap shortcut (sheets-icd-v2.md §6.8,
+// Assumption L) — same wiring as SheetEditorMobile.tsx.
+function handleHighlightChord(sectionId: string, lineIndex: number, charIndex: number) {
+  const line = useSheetEditorStore
+    .getState()
+    .draft?.sections.find((sec) => sec.id === sectionId)?.lines[lineIndex];
+  if (!line) return;
+  const range = computeChordHighlightRange(charIndex, line.chordPlacements, line.lyrics.length);
+  useSheetEditorStore.getState().addAnnotation({ type: "highlight", target: { sectionId, lineIndex, range } });
+}
+
+function SectionsBody({ draft }: { draft: EditableSheet }) {
+  if (draft.sections.length === 0) {
+    return (
+      <p className="border-b-2 border-divider p-[22px] font-mono-rf text-[11px] text-neutral-500">
+        Add a section above to start placing lyrics and chords.
+      </p>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-4 border-b-2 border-divider p-[22px]">
+      <div className="font-mono-rf text-[10px] tracking-[.14em] text-neutral-600">LYRICS &amp; CHORDS</div>
+      {draft.sections.map((section) => (
+        <div key={section.id} className="flex flex-col gap-2 border-2 border-divider p-2">
+          <div className="font-sans text-[13px] font-extrabold">{section.label}</div>
+
+          {section.lines.length === 0 ? (
+            <p className="font-mono-rf text-[11px] text-neutral-500">No lines yet — add one above.</p>
+          ) : (
+            section.lines.map((_line, lineIndex) => (
+              <div key={lineIndex} className="flex flex-col gap-2">
+                <ChordPlacementEditor
+                  sectionId={section.id}
+                  lineIndex={lineIndex}
+                  onHighlightChord={handleHighlightChord}
+                />
+                <AnnotationEditor sectionId={section.id} lineIndex={lineIndex} />
+              </div>
+            ))
+          )}
+
+          <AnnotationEditor sectionId={section.id} lineIndex={0} label="SECTION" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function SheetEditorDesktop({ sheetId }: { sheetId: string | null }) {
   const hydrated = useSheetsStore((s) => s.hydrated);
   const persistenceError = useSheetsStore((s) => s.persistenceError);
@@ -209,11 +262,9 @@ export function SheetEditorDesktop({ sheetId }: { sheetId: string | null }) {
 
         <div className="min-h-0 flex-1 overflow-y-auto">
           <MetaForm draft={draft} />
-
-          {/* Placeholder composition points — see SheetEditorMobile.tsx's header note. */}
-          <div className="border-b-2 border-divider p-[22px] font-mono-rf text-[10px] tracking-[.14em] text-neutral-500">
-            SECTIONS, CHORD PLACEMENT, CHORD OVERRIDES AND ANNOTATIONS EDIT HERE — wired in a follow-up pass
-          </div>
+          <SectionEditor />
+          <SectionsBody draft={draft} />
+          <ChordOverrideEditor />
         </div>
       </div>
       <div className="border-l-2 border-ink" />

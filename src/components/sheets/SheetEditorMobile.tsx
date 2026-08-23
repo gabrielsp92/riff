@@ -2,20 +2,26 @@
 
 import { useEffect } from "react";
 import { EditableSheet, useSheetEditorStore, useSheetsNavStore, useSheetsStore } from "@/lib/store";
+import { AnnotationEditor, computeChordHighlightRange } from "./AnnotationEditor";
+import { ChordOverrideEditor } from "./ChordOverrideEditor";
+import { ChordPlacementEditor } from "./ChordPlacementEditor";
+import { SectionEditor } from "./SectionEditor";
 
 // Sheet editor, mobile layout (sheets-icd-v2.md §6). Screen skeleton for a
 // given `sheetId` (null = new sheet). Owns load()-on-mount, the new-sheet /
 // edit-metadata form (bound to updateMeta, §6.2), Save/Cancel navigation
 // (§6.11), and the loading/not-found/blank/populated states (§6.12).
 //
-// Composition note: T5c (SectionEditor), T5d (ChordPlacementEditor +
-// ChordPicker), T5e (ChordOverrideEditor), and T5f (AnnotationEditor) are
-// built as fully standalone components in this same pass — each depends
-// only on `useSheetEditorStore`, not on this file or each other — but are
-// deliberately NOT composed into this screen yet. A follow-up wiring task
-// slots them into the placeholder section below once this branch and the
-// T5c-f branch are both in (mirrors T4g/T5h's own file-collision-avoidance
-// precedent — see sheets-tasks-v2.md dispatch guidance §3).
+// Composition (T5h): SectionEditor owns section/line *structure* (add/
+// rename/remove sections and lines). Below it, this screen walks
+// `draft.sections`/`lines` itself and renders one ChordPlacementEditor +
+// one AnnotationEditor per line — both are standalone, keyed only by
+// `sectionId`/`lineIndex` props, so composing them at this call site (rather
+// than threading them through SectionEditor as a render-prop) keeps every
+// sub-editor independent and swappable. Each section header also gets an
+// AnnotationEditor pinned to `lineIndex: 0` labeled "SECTION" — the
+// section-level-note affordance from Assumption J (§6.8), exactly the
+// wiring this repo's own comment in AnnotationEditor.tsx calls for.
 const TIME_SIGNATURE_UNITS = [2, 4, 8, 16];
 
 const inputClass =
@@ -132,6 +138,58 @@ function MetaForm({ draft }: { draft: EditableSheet }) {
   );
 }
 
+// "Highlight this chord" one-tap shortcut (sheets-icd-v2.md §6.8,
+// Assumption L) — wires ChordPlacementEditor's onHighlightChord callback to
+// AnnotationEditor's exported computeChordHighlightRange helper: given the
+// tapped placement's charIndex, compute the range up to the next placement
+// (or line end) in that same line, then add a highlight annotation for it.
+function handleHighlightChord(sectionId: string, lineIndex: number, charIndex: number) {
+  const line = useSheetEditorStore
+    .getState()
+    .draft?.sections.find((sec) => sec.id === sectionId)?.lines[lineIndex];
+  if (!line) return;
+  const range = computeChordHighlightRange(charIndex, line.chordPlacements, line.lyrics.length);
+  useSheetEditorStore.getState().addAnnotation({ type: "highlight", target: { sectionId, lineIndex, range } });
+}
+
+function SectionsBody({ draft }: { draft: EditableSheet }) {
+  if (draft.sections.length === 0) {
+    return (
+      <p className="border-b-2 border-divider p-[18px] font-mono-rf text-[11px] text-neutral-500">
+        Add a section above to start placing lyrics and chords.
+      </p>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-4 border-b-2 border-divider p-[18px]">
+      <div className="font-mono-rf text-[10px] tracking-[.14em] text-neutral-600">LYRICS &amp; CHORDS</div>
+      {draft.sections.map((section) => (
+        <div key={section.id} className="flex flex-col gap-2 border-2 border-divider p-2">
+          <div className="font-sans text-[13px] font-extrabold">{section.label}</div>
+
+          {section.lines.length === 0 ? (
+            <p className="font-mono-rf text-[11px] text-neutral-500">No lines yet — add one above.</p>
+          ) : (
+            section.lines.map((_line, lineIndex) => (
+              <div key={lineIndex} className="flex flex-col gap-2">
+                <ChordPlacementEditor
+                  sectionId={section.id}
+                  lineIndex={lineIndex}
+                  onHighlightChord={handleHighlightChord}
+                />
+                <AnnotationEditor sectionId={section.id} lineIndex={lineIndex} />
+              </div>
+            ))
+          )}
+
+          <AnnotationEditor sectionId={section.id} lineIndex={0} label="SECTION" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function SheetEditorMobile({ sheetId }: { sheetId: string | null }) {
   const hydrated = useSheetsStore((s) => s.hydrated);
   const persistenceError = useSheetsStore((s) => s.persistenceError);
@@ -223,11 +281,9 @@ export function SheetEditorMobile({ sheetId }: { sheetId: string | null }) {
 
       <div className="min-h-0 flex-1 overflow-y-auto">
         <MetaForm draft={draft} />
-
-        {/* Placeholder composition points — see file header note. */}
-        <div className="border-b-2 border-divider p-[18px] font-mono-rf text-[10px] tracking-[.14em] text-neutral-500">
-          SECTIONS, CHORD PLACEMENT, CHORD OVERRIDES AND ANNOTATIONS EDIT HERE — wired in a follow-up pass
-        </div>
+        <SectionEditor />
+        <SectionsBody draft={draft} />
+        <ChordOverrideEditor />
       </div>
     </div>
   );

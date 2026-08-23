@@ -1,15 +1,15 @@
 "use client";
 
 import { useSheetsNavStore } from "@/lib/store";
-import { Placeholder } from "../shell/Placeholder";
+import { SheetEditorMobile } from "./SheetEditorMobile";
 import { SheetsList } from "./SheetsList";
 import { SheetViewerMobile } from "./SheetViewerMobile";
 
 // Sheets tool, mobile layout. Reads useSheetsNavStore().screen (sheets-icd.md
 // §6): "list" renders SheetsList; "viewer" renders SheetViewerMobile (Epic
-// 04); "editor" still renders the Placeholder (Epic 05). A single "← SHEETS"
-// back control lives here, above both — SheetViewerMobile doesn't render its
-// own, so there's never a duplicate.
+// 04); "editor" renders SheetEditorMobile (Epic 05, T5h). A single "←
+// SHEETS" back control lives here, above both — neither SheetViewerMobile
+// nor SheetEditorMobile renders its own, so there's never a duplicate.
 export function SheetsMobile() {
   const screen = useSheetsNavStore((s) => s.screen);
   const openList = useSheetsNavStore((s) => s.openList);
@@ -26,7 +26,11 @@ export function SheetsMobile() {
       >
         ← SHEETS
       </button>
-      {screen.name === "viewer" ? <SheetViewerMobile sheetId={screen.sheetId} /> : <Placeholder label="NEW SHEET" />}
+      {screen.name === "viewer" ? (
+        <SheetViewerMobile sheetId={screen.sheetId} />
+      ) : (
+        <SheetEditorMobile sheetId={screen.sheetId} />
+      )}
     </div>
   );
 }

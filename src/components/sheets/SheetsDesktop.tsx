@@ -1,7 +1,7 @@
 "use client";
 
 import { useSheetsNavStore } from "@/lib/store";
-import { Placeholder } from "../shell/Placeholder";
+import { SheetEditorDesktop } from "./SheetEditorDesktop";
 import { SheetsList } from "./SheetsList";
 import { SheetViewerDesktop } from "./SheetViewerDesktop";
 
@@ -9,13 +9,13 @@ import { SheetViewerDesktop } from "./SheetViewerDesktop";
 // DesktopShell's [196px_1fr_400px] grid (rail is rendered by DesktopShell
 // itself). Reads useSheetsNavStore().screen (sheets-icd.md §6): "list"
 // renders SheetsList in the main pane; "viewer" renders SheetViewerDesktop
-// (Epic 04, which supplies its own two-column main pane + right panel); the
-// still-unbuilt "editor" (Epic 05) keeps the Placeholder. A single "←
-// SHEETS" back control lives here, above the viewer's main pane, so there's
-// never a duplicate.
+// (Epic 04, which supplies its own two-column main pane + right panel);
+// "editor" renders SheetEditorDesktop (Epic 05, T5h — same two-fragment-
+// column composition). Neither of these two screens needs a wrapper back
+// control here; SheetViewerDesktop renders its own, and SheetEditorDesktop
+// has its own CANCEL control that navigates correctly per screen contract.
 export function SheetsDesktop() {
   const screen = useSheetsNavStore((s) => s.screen);
-  const openList = useSheetsNavStore((s) => s.openList);
 
   if (screen.name === "list") {
     return (
@@ -30,18 +30,5 @@ export function SheetsDesktop() {
     return <SheetViewerDesktop sheetId={screen.sheetId} />;
   }
 
-  return (
-    <>
-      <div className="flex min-h-0 flex-1 flex-col">
-        <button
-          onClick={openList}
-          className="border-b-2 border-ink px-[22px] py-[14px] text-left font-mono-rf text-[10px] font-bold tracking-[.14em] text-neutral-700"
-        >
-          ← SHEETS
-        </button>
-        <Placeholder label="NEW SHEET" />
-      </div>
-      <div className="border-l-2 border-ink" />
-    </>
-  );
+  return <SheetEditorDesktop sheetId={screen.sheetId} />;
 }
