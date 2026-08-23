@@ -2,7 +2,8 @@
 
 import { useTuner } from "@/hooks/useTuner";
 import { useTransportStore } from "@/lib/store";
-import { TUNING_NAMES, TuningName } from "@/lib/music";
+import { TUNING_NAMES, TuningName, stringFreq } from "@/lib/music";
+import { playReferenceTone } from "@/lib/referenceTone";
 import { useTunerDisplay } from "./useTunerDisplay";
 import { MicGate } from "./MicGate";
 
@@ -18,6 +19,7 @@ export function TunerDesktop() {
     tuning,
     setTuning,
     strings,
+    a4,
     detected,
     micLevel,
     permission,
@@ -89,9 +91,12 @@ export function TunerDesktop() {
           {strings.map((s, i) => {
             const active = i === activeStringIndex;
             return (
-              <div
+              <button
                 key={i}
-                className={`border-r-2 border-ink py-[14px] pl-3 ${active ? "bg-accent text-white" : ""}`}
+                onClick={() => playReferenceTone(stringFreq(s, a4))}
+                className={`border-r-2 border-ink py-[14px] pl-3 text-left ${
+                  active ? "bg-accent text-white" : "hover:bg-accent-100 active:bg-accent-200"
+                }`}
               >
                 <div className="font-sans text-[22px] font-extrabold leading-none">{s.note}</div>
                 <div
@@ -102,7 +107,7 @@ export function TunerDesktop() {
                   {s.note}
                   {s.octave}
                 </div>
-              </div>
+              </button>
             );
           })}
         </div>
