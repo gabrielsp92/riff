@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { useMetronomeEngine } from "@/hooks/useMetronomeEngine";
-import { useTransportStore } from "@/lib/store";
+import { useToolStore, useTransportStore } from "@/lib/store";
 import { ToolId } from "@/lib/tools";
 import { MobileShell } from "./MobileShell";
 import { DesktopShell } from "./DesktopShell";
@@ -17,7 +17,8 @@ const KEY_TO_TOOL: Record<string, ToolId> = {
 };
 
 export function Shell() {
-  const [tool, setTool] = useState<ToolId>("tuner");
+  const tool = useToolStore((s) => s.tool);
+  const setTool = useToolStore((s) => s.setTool);
   const isDesktop = useMediaQuery("(min-width: 1024px)");
 
   useMetronomeEngine();
@@ -45,7 +46,7 @@ export function Shell() {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [isDesktop, toggleRunning, nudgeBpm]);
+  }, [isDesktop, toggleRunning, nudgeBpm, setTool]);
 
   return isDesktop ? (
     <DesktopShell tool={tool} setTool={setTool} />

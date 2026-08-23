@@ -2,6 +2,25 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { TuningName } from "./music";
 import { createSheetsIndexedDbStorage } from "./sheetsPersistence";
+import { ToolId } from "./tools";
+
+// ---------------------------------------------------------------------------
+// Active tool (sheets-icd-v2.md §2) — moved out of Shell.tsx's local
+// `useState` into a small Zustand store so a component nested under any
+// tool (e.g. the Sheets viewer's "Send to Metronome" button) can switch the
+// active tool without prop-drilling `setTool` through Shell/MobileShell/
+// DesktopShell.
+// ---------------------------------------------------------------------------
+
+interface ToolState {
+  tool: ToolId;
+  setTool: (t: ToolId) => void;
+}
+
+export const useToolStore = create<ToolState>((set) => ({
+  tool: "tuner",
+  setTool: (tool) => set({ tool }),
+}));
 
 export type Permission = "idle" | "requesting" | "granted" | "denied";
 
