@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics><meta name="design_doc_mode" content="canvas"><link rel="stylesheet" href="modernist.css"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap"><style>body{margin:0;background:#e6e4e3;font-family:"Archivo",system-ui,sans-serif;color:#201e1d}a{color:#ae1800}a:hover{color:#ec3013}.dv-turn{padding:44px 48px 36px;border-bottom:2px solid rgba(32,30,29,.4)}.dv-thd{display:flex;align-items:baseline;gap:12px;margin:0 0 24px}.dv-tid{font:700 10px "JetBrains Mono",monospace;padding:4px 8px;background:#201e1d;color:#f3f2f2;text-decoration:none}.dv-tname{font:800 13px/1.2 "Archivo",sans-serif;text-transform:uppercase;letter-spacing:.1em}.dv-opts{display:flex;flex-wrap:wrap;gap:32px;align-items:flex-start}.dv-opt{flex:none;display:flex;flex-direction:column;gap:10px}.dv-oid{font:700 10.5px "JetBrains Mono",monospace;padding:4px 8px;background:rgba(32,30,29,.12);color:#201e1d;text-decoration:none}.dv-olabel{display:flex;align-items:baseline;gap:10px;font:500 11px/1.3 "Archivo",sans-serif;text-transform:uppercase;letter-spacing:.08em;color:rgba(32,30,29,.6)}.dv-opt:target .dv-oid{background:#ec3013;color:#fff}.dv-next{margin:26px 0 0;font:400 12px/1.6 "Archivo",sans-serif;color:rgba(32,30,29,.55)}</style></helmet>
+
+<section class="dv-turn" id="t2" style="--color-accent: {{ accent }}">
+<div class="dv-thd"><a class="dv-tid" href="#t2">2</a><span class="dv-tname">RIFF built out — mobile in <a class="dv-oid" href="#1a">1a</a>, desktop in <a class="dv-oid" href="#1d">1d</a></span></div>
+
+<div class="dv-opts">
+
+<div class="dv-opt" id="2a">
+<div class="dv-olabel"><a class="dv-oid" href="#2a">2a</a>Mobile · Tuner</div>
+<div style="width:390px;height:800px;background:var(--color-bg);border:2px solid var(--color-text);display:flex;flex-direction:column;overflow:hidden">
+  <div style="display:flex;justify-content:space-between;align-items:center;height:30px;padding:0 14px;border-bottom:2px solid var(--color-text);font:700 9px 'JetBrains Mono';letter-spacing:.14em"><span>9:41</span><span>RIFF PWA</span><span>100%</span></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 18px;border-bottom:2px solid var(--color-text)"><span style="font:900 22px/1 'Archivo';letter-spacing:-.03em">RIFF</span><span style="font:700 10px 'JetBrains Mono';letter-spacing:.14em;background:var(--color-text);color:var(--color-bg);padding:5px 8px">TUNER</span></div>
+  <div style="padding:16px 18px 0;font:700 10px 'JetBrains Mono';letter-spacing:.14em;color:var(--color-neutral-700)">{{ tuningLabel }} · A4 = 440 HZ · STRING 6</div>
+  <div style="display:flex;align-items:flex-end;gap:8px;padding:2px 18px 10px"><span style="font:800 156px/.78 'Archivo';letter-spacing:-.06em">{{ note }}</span><span style="font:700 32px/1 'JetBrains Mono';color:var(--color-neutral-600);padding-bottom:12px">{{ oct }}</span></div>
+  <div style="padding:0 18px 14px">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;height:34px;border-bottom:2px solid var(--color-text)"><sc-for list="{{ ticks }}" as="t" hint-placeholder-count="21"><span style="width:2px;background:var(--color-neutral-500);height:{{ t.h }}"></span></sc-for></div>
+    <div style="position:relative;height:0"><div style="position:absolute;left:53%;top:-46px;width:4px;height:46px;background:var(--color-accent)"></div></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding-top:12px"><span style="font:700 13px 'JetBrains Mono';letter-spacing:.1em">+3 CENTS · SHARP</span><span style="font:800 10px 'Archivo';letter-spacing:.14em;background:var(--color-accent);color:#fff;padding:6px 10px">IN TUNE</span></div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(6,1fr);border-top:2px solid var(--color-text)"><sc-for list="{{ strings }}" as="s" hint-placeholder-count="6"><div style="border-right:2px solid var(--color-text);padding:12px 0 12px 8px"><div style="font:800 20px/1 'Archivo'">{{ s.n }}</div><div style="font:400 9px 'JetBrains Mono';color:var(--color-neutral-600);margin-top:4px">{{ s.o }}</div></div></sc-for></div>
+  <div style="border-top:2px solid var(--color-text);padding:14px 18px 12px;display:flex;flex-direction:column;gap:10px">
+    <div style="font:700 10px 'JetBrains Mono';letter-spacing:.14em;color:var(--color-neutral-700)">MIC INPUT · CHROMATIC</div>
+    <div style="display:flex;align-items:flex-end;gap:3px;height:52px"><sc-for list="{{ bars }}" as="b" hint-placeholder-count="28"><span style="flex:1;background:var(--color-neutral-400);height:{{ b.h }}"></span></sc-for></div>
+  </div>
+  <div style="flex:1;border-top:2px solid var(--color-divider);padding:12px 18px;min-height:0">
+    <div style="font:700 10px 'JetBrains Mono';letter-spacing:.14em;color:var(--color-neutral-700);margin-bottom:8px">TUNINGS</div>
+    <div style="display:flex;flex-direction:column;gap:2px">
+      <div style="display:flex;justify-content:space-between;padding:9px 10px;background:var(--color-accent);color:#fff;font:800 12px 'Archivo'"><span>STANDARD E</span><span style="font:700 9px 'JetBrains Mono'">E A D G B E</span></div>
+      <div style="display:flex;justify-content:space-between;padding:9px 10px;background:var(--color-neutral-200);font:800 12px 'Archivo'"><span>DROP D</span><span style="font:700 9px 'JetBrains Mono';color:var(--color-neutral-700)">D A D G B E</span></div>
+      <div style="display:flex;justify-content:space-between;padding:9px 10px;background:var(--color-neutral-200);font:800 12px 'Archivo'"><span>OPEN G</span><span style="font:700 9px 'JetBrains Mono';color:var(--color-neutral-700)">D G D G B D</span></div>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(5,1fr);border-top:2px solid var(--color-text)">
+    <div style="padding:12px 0 12px 8px;background:var(--color-accent);color:#fff;font:800 9px 'Archivo';letter-spacing:.1em">TUNE</div>
+    <div style="padding:12px 0 12px 8px;border-left:2px solid var(--color-text);font:800 9px 'Archivo';letter-spacing:.1em">TEMPO</div>
+    <div style="padding:12px 0 12px 8px;border-left:2px solid var(--color-text);font:800 9px 'Archivo';letter-spacing:.1em">SHEETS</div>
+    <div style="padding:12px 0 12px 8px;border-left:2px solid var(--color-text);font:800 9px 'Archivo';letter-spacing:.1em">LOOP</div>
+    <div style="padding:12px 0 12px 8px;border-left:2px solid var(--color-text);font:800 9px 'Archivo';letter-spacing:.1em">BEATS</div>
+  </div>
+</div>
+</div>
+
+<div class="dv-opt" id="2b">
+<div class="dv-olabel"><a class="dv-oid" href="#2b">2b</a>Mobile · Metronome</div>
+<div style="width:390px;height:800px;background:var(--color-bg);border:2px solid var(--color-text);display:flex;flex-direction:column;overflow:hidden">
+  <div style="display:flex;justify-content:space-between;align-items:center;height:30px;padding:0 14px;border-bottom:2px solid var(--color-text);font:700 9px 'JetBrains Mono';letter-spacing:.14em"><span>9:41</span><span>RIFF PWA</span><span>100%</span></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 18px;border-bottom:2px solid var(--color-text)"><span style="font:900 22px/1 'Archivo';letter-spacing:-.03em">RIFF</span><span style="font:700 10px 'JetBrains Mono';letter-spacing:.14em;background:var(--color-text);color:var(--color-bg);padding:5px 8px">METRONOME</span></div>
+  <div style="padding:16px 18px 0;font:700 10px 'JetBrains Mono';letter-spacing:.14em;color:var(--color-neutral-700)">MODERATO · 4/4 · RUNNING</div>
+  <div style="display:flex;align-items:flex-end;gap:12px;padding:2px 18px 14px"><span style="font:800 140px/.8 'Archivo';letter-spacing:-.05em">96</span><span style="font:700 16px 'JetBrains Mono';color:var(--color-neutral-600);padding-bottom:14px">BPM</span></div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);border-top:2px solid var(--color-text);border-bottom:2px solid var(--color-text)">
+    <div style="height:88px;background:var(--color-accent);border-right:2px solid var(--color-text);padding:8px 0 0 10px;font:800 11px 'Archivo';color:#fff">1</div>
+    <div style="height:88px;border-right:2px solid var(--color-text);padding:8px 0 0 10px;font:800 11px 'Archivo';color:var(--color-neutral-600)">2</div>
+    <div style="height:88px;border-right:2px solid var(--color-text);padding:8px 0 0 10px;font:800 11px 'Archivo';color:var(--color-neutral-600)">3</div>
+    <div style="height:88px;padding:8px 0 0 10px;font:800 11px 'Archivo';color:var(--color-neutral-600)">4</div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;border-bottom:2px solid var(--color-text)">
+    <div style="padding:14px 0 14px 12px;border-right:2px solid var(--color-text);font:800 20px 'Archivo'">−</div>
+    <div style="padding:14px 0 14px 12px;border-right:2px solid var(--color-text);font:800 12px 'Archivo';letter-spacing:.08em">TAP</div>
+    <div style="padding:14px 0 14px 12px;font:800 20px 'Archivo'">+</div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;border-bottom:2px solid var(--color-divider)">
+    <div style="padding:14px 0 14px 18px;border-right:2px solid var(--color-divider)"><div style="font:700 9px 'JetBrains Mono';color:var(--color-neutral-600);letter-spacing:.12em">SUBDIVISION</div><div style="font:800 17px 'Archivo';margin-top:4px">EIGHTHS</div></div>
+    <div style="padding:14px 0 14px 18px"><div style="font:700 9px 'JetBrains Mono';color:var(--color-neutral-600);letter-spacing:.12em">ACCENT</div><div style="font:800 17px 'Archivo';margin-top:4px">BEAT 1</div></div>
+  </div>
+  <div style="padding:14px 18px;border-bottom:2px solid var(--color-divider)">
+    <div style="display:flex;justify-content:space-between;font:700 10px 'JetBrains Mono';letter-spacing:.12em;color:var(--color-neutral-700);margin-bottom:10px"><span>TEMPO TRAINER</span><span>96 → 128 / 8 BARS</span></div>
+    <div style="height:12px;background:var(--color-neutral-300);position:relative"><div style="position:absolute;left:0;top:0;bottom:0;width:38%;background:var(--color-accent)"></div></div>
+  </div>
+  <div style="flex:1;padding:14px 18px;min-height:0">
+    <div style="font:700 10px 'JetBrains Mono';letter-spacing:.12em;color:var(--color-neutral-700);margin-bottom:8px">SETLIST TEMPOS</div>
+    <div style="display:flex;flex-direction:column">
+      <sc-for list="{{ setlist }}" as="s" hint-placeholder-count="5"><div style="display:flex;justify-content:space-between;align-items:baseline;padding:8px 0;border-bottom:2px solid var(--color-divider);font:700 11px 'Archivo';letter-spacing:.02em"><span>{{ s.n }}</span><span style="font:700 10px 'JetBrains Mono';color:var(--color-neutral-700)">{{ s.bpm }}</span></div></sc-for>
+    </div>
+  </div>
+  <div style="border-top:2px solid var(--color-text);padding:16px 0 16px 18px;background:var(--color-accent);color:#fff;font:800 13px 'Archivo';letter-spacing:.12em">STOP CLICK</div>
+  <div style="display:grid;grid-template-columns:repeat(5,1fr);border-top:2px solid var(--color-text)">
+    <div style="padding:12px 0 12px 8px;font:800 9px 'Archivo';letter-spacing:.1em">TUNE</div>
+    <div style="padding:12px 0 12px 8px;border-left:2px solid var(--color-text);background:var(--color-accent);color:#fff;font:800 9px 'Archivo';letter-spacing:.1em">TEMPO</div>
+    <div style="padding:12px 0 12px 8px;border-left:2px solid var(--color-text);font:800 9px 'Archivo';letter-spacing:.1em">SHEETS</div>
+    <div style="padding:12px 0 12px 8px;border-left:2px solid var(--color-text);font:800 9px 'Archivo';letter-spacing:.1em">LOOP</div>
+    <div style="padding:12px 0 12px 8px;border-left:2px solid var(--color-text);font:800 9px 'Archivo';letter-spacing:.1em">BEATS</div>
+  </div>
+</div>
+</div>
+
+<div class="dv-opt" id="2c">
+<div class="dv-olabel"><a class="dv-oid" href="#2c">2c</a>Mobile · Chord sheet + tablature + piano</div>
+<div style="width:390px;height:800px;background:var(--color-bg);border:2px solid var(--color-text);display:flex;flex-direction:column;overflow:hidden">
+  <div style="display:flex;justify-content:space-between;align-items:center;height:30px;padding:0 14px;border-bottom:2px solid var(--color-text);font:700 9px 'JetBrains Mono';letter-spacing:.14em"><span>9:41</span><span>RIFF PWA</span><span>100%</span></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 18px;border-bottom:2px solid var(--color-text)"><span style="font:900 22px/1 'Archivo';letter-spacing:-.03em">RIFF</span><span style="font:700 10px 'JetBrains Mono';letter-spacing:.14em;background:var(--color-text);color:var(--color-bg);padding:5px 8px">CHORD SHEET</span></div>
+  <div style="padding:14px 18px;border-bottom:2px solid var(--color-text)">
+    <div style="font:800 30px/1.02 'Archivo';letter-spacing:-.02em">DEAD AIR ON<br>THE HIGHWAY</div>
+    <div style="font:700 10px 'JetBrains Mono';letter-spacing:.12em;color:var(--color-neutral-700);margin-top:8px">KEY OF E · 96 BPM · 4/4 · VERSE 1</div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;border-bottom:2px solid var(--color-text)">
+    <div style="padding:11px 0 11px 12px;border-right:2px solid var(--color-text);font:800 10px 'Archivo';letter-spacing:.08em">AUTOSCROLL</div>
+    <div style="padding:11px 0 11px 12px;border-right:2px solid var(--color-text);font:800 10px 'Archivo';letter-spacing:.08em">CAPO 0</div>
+    <div style="padding:11px 0 11px 12px;font:800 10px 'Archivo';letter-spacing:.08em">−1 SEMI</div>
+  </div>
+  <div style="padding:14px 18px;border-bottom:2px solid var(--color-divider)">
+    <div style="display:flex;gap:6px;margin-bottom:12px"><span style="font:800 12px 'Archivo';padding:6px 10px;background:var(--color-accent);color:#fff">E5</span><span style="font:800 12px 'Archivo';padding:6px 10px;border:2px solid var(--color-text)">G5</span><span style="font:800 12px 'Archivo';padding:6px 10px;border:2px solid var(--color-text)">A5</span><span style="font:800 12px 'Archivo';padding:6px 10px;border:2px solid var(--color-text)">D5</span></div>
+    <div style="font:700 11px/1 'JetBrains Mono';color:var(--color-accent-700);letter-spacing:.06em">E5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;G5</div>
+    <div style="font:400 15px/1.5 'Archivo'">Headlights on the county line</div>
+    <div style="font:700 11px/1 'JetBrains Mono';color:var(--color-accent-700);letter-spacing:.06em;margin-top:8px">A5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;D5</div>
+    <div style="font:400 15px/1.5 'Archivo'">Amp hum keeping perfect time</div>
+  </div>
+  <sc-if value="{{ showTab }}" hint-placeholder-val="{{ true }}">
+  <div style="padding:14px 18px;border-bottom:2px solid var(--color-divider)">
+    <div style="font:700 10px 'JetBrains Mono';letter-spacing:.12em;color:var(--color-neutral-700);margin-bottom:10px">TABLATURE · VERSE RIFF</div>
+    <div style="font:700 11.5px/1.55 'JetBrains Mono';white-space:pre;overflow:hidden"><sc-for list="{{ tabLines }}" as="l" hint-placeholder-count="6"><div>{{ l }}</div></sc-for></div>
+  </div>
+  </sc-if>
+  <div style="padding:14px 18px;flex:1;min-height:0">
+    <div style="display:flex;justify-content:space-between;font:700 10px 'JetBrains Mono';letter-spacing:.12em;color:var(--color-neutral-700);margin-bottom:10px"><span>PIANO VOICING</span><span>E5 · E–B–E</span></div>
+    <div style="display:flex;height:86px;border:2px solid var(--color-text)"><sc-for list="{{ keys }}" as="k" hint-placeholder-count="14"><div style="flex:1;border-right:2px solid var(--color-text);background:{{ k.fill }}"></div></sc-for></div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(5,1fr);border-top:2px solid var(--color-text)">
+    <div style="padding:12px 0 12px 8px;font:800 9px 'Archivo';letter-spacing:.1em">TUNE</div>
+    <div style="padding:12px 0 12px 8px;border-left:2px solid var(--color-text);font:800 9px 'Archivo';letter-spacing:.1em">TEMPO</div>
+    <div style="padding:12px 0 12px 8px;border-left:2px solid var(--color-text);background:var(--color-accent);color:#fff;font:800 9px 'Archivo';letter-spacing:.1em">SHEETS</div>
+    <div style="padding:12px 0 12px 8px;border-left:2px solid var(--color-text);font:800 9px 'Archivo';letter-spacing:.1em">LOOP</div>
+    <div style="padding:12px 0 12px 8px;border-left:2px solid var(--color-text);font:800 9px 'Archivo';letter-spacing:.1em">BEATS</div>
+  </div>
+</div>
+</div>
+
+<div class="dv-opt" id="2d">
+<div class="dv-olabel"><a class="dv-oid" href="#2d">2d</a>Mobile · Loop station</div>
+<div style="width:390px;height:800px;background:var(--color-bg);border:2px solid var(--color-text);display:flex;flex-direction:column;overflow:hidden">
+  <div style="display:flex;justify-content:space-between;align-items:center;height:30px;padding:0 14px;border-bottom:2px solid var(--color-text);font:700 9px 'JetBrains Mono';letter-spacing:.14em"><span>9:41</span><span>RIFF PWA</span><span>100%</span></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 18px;border-bottom:2px solid var(--color-text)"><span style="font:900 22px/1 'Archivo';letter-spacing:-.03em">RIFF</span><span style="font:700 10px 'JetBrains Mono';letter-spacing:.14em;background:var(--color-accent);color:#fff;padding:5px 8px">REC ARMED</span></div>
+  <div style="display:flex;align-items:flex-end;gap:12px;padding:14px 18px;border-bottom:2px solid var(--color-text)"><span style="font:800 84px/.85 'Archivo'">4</span><span style="font:700 12px 'JetBrains Mono';letter-spacing:.12em;color:var(--color-neutral-700);padding-bottom:8px">BARS · 96 BPM · QUANTIZED</span></div>
+  <div style="padding:14px 18px 0;display:flex;flex-direction:column;gap:10px;flex:1;min-height:0">
+    <sc-for list="{{ loops }}" as="lp" hint-placeholder-count="4">
+      <div style="border:2px solid var(--color-text);padding:10px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px"><span style="font:800 12px 'Archivo';letter-spacing:.08em">{{ lp.name }}</span><span style="font:700 9px 'JetBrains Mono';color:var(--color-neutral-600)">{{ lp.len }}</span></div>
+        <div style="display:flex;align-items:center;gap:2px;height:30px"><sc-for list="{{ lp.bars }}" as="b" hint-placeholder-count="22"><span style="flex:1;background:{{ lp.fill }};height:{{ b.h }}"></span></sc-for></div>
+        <div style="display:flex;gap:6px;margin-top:8px"><span style="font:700 9px 'JetBrains Mono';letter-spacing:.1em;padding:4px 7px;border:2px solid var(--color-divider)">MUTE</span><span style="font:700 9px 'JetBrains Mono';letter-spacing:.1em;padding:4px 7px;border:2px solid var(--color-divider)">SOLO</span><span style="font:700 9px 'JetBrains Mono';letter-spacing:.1em;padding:4px 7px;border:2px solid var(--color-divider)">CLEAR</span></div>
+      </div>
+    </sc-for>
+  </div>
+  <div style="padding:12px 18px;border-top:2px solid var(--color-divider);display:flex;justify-content:space-between;font:700 10px 'JetBrains Mono';letter-spacing:.12em;color:var(--color-neutral-700)"><span>INPUT · MIC 62%</span><span>LATENCY 11 MS</span></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;border-top:2px solid var(--color-text)">
+    <div style="padding:18px 0 18px 12px;background:var(--color-accent);color:#fff;font:800 12px 'Archivo';letter-spacing:.1em">REC</div>
+    <div style="padding:18px 0 18px 12px;border-left:2px solid var(--color-text);font:800 12px 'Archivo';letter-spacing:.1em">PLAY</div>
+    <div style="padding:18px 0 18px 12px;border-left:2px solid var(--color-text);font:800 12px 'Archivo';letter-spacing:.1em">UNDO</div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(5,1fr);border-top:2px solid var(--color-text)">
+    <div style="padding:12px 0 12px 8px;font:800 9px 'Archivo';letter-spacing:.1em">TUNE</div>
+    <div style="padding:12px 0 12px 8px;border-left:2px solid var(--color-text);font:800 9px 'Archivo';letter-spacing:.1em">TEMPO</div>
+    <div style="padding:12px 0 12px 8px;border-left:2px solid var(--color-text);font:800 9px 'Archivo';letter-spacing:.1em">SHEETS</div>
+    <div style="padding:12px 0 12px 8px;border-left:2px solid var(--color-text);background:var(--color-accent);color:#fff;font:800 9px 'Archivo';letter-spacing:.1em">LOOP</div>
+    <div style="padding:12px 0 12px 8px;border-left:2px solid var(--color-text);font:800 9px 'Archivo';letter-spacing:.1em">BEATS</div>
+  </div>
+</div>
+</div>
+
+<div class="dv-opt" id="2e">
+<div class="dv-olabel"><a class="dv-oid" href="#2e">2e</a>Mobile · Beat maker</div>
+<div style="width:390px;height:800px;background:var(--color-bg);border:2px solid var(--color-text);display:flex;flex-direction:column;overflow:hidden">
+  <div style="display:flex;justify-content:space-between;align-items:center;height:30px;padding:0 14px;border-bottom:2px solid var(--color-text);font:700 9px 'JetBrains Mono';letter-spacing:.14em"><span>9:41</span><span>RIFF PWA</span><span>100%</span></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 18px;border-bottom:2px solid var(--color-text)"><span style="font:900 22px/1 'Archivo';letter-spacing:-.03em">RIFF</span><span style="font:700 10px 'JetBrains Mono';letter-spacing:.14em;background:var(--color-text);color:var(--color-bg);padding:5px 8px">BEAT MAKER</span></div>
+  <div style="padding:14px 18px;border-bottom:2px solid var(--color-text)"><div style="font:800 40px/1 'Archivo';letter-spacing:-.02em">GARAGE KIT</div><div style="font:700 10px 'JetBrains Mono';letter-spacing:.12em;color:var(--color-neutral-700);margin-top:8px">96 BPM · 16 STEPS · SWING 12%</div></div>
+  <div style="padding:10px 18px 0;display:grid;grid-template-columns:repeat(16,1fr);gap:2px;font:700 7px 'JetBrains Mono';color:var(--color-neutral-600)">
+    <sc-for list="{{ stepNums }}" as="s" hint-placeholder-count="16"><span>{{ s.n }}</span></sc-for>
+  </div>
+  <div style="padding:8px 18px 0;display:flex;flex-direction:column;gap:10px;flex:1;min-height:0">
+    <sc-for list="{{ drumRows6 }}" as="r" hint-placeholder-count="6">
+      <div>
+        <div style="font:800 10px 'Archivo';letter-spacing:.1em;margin-bottom:5px">{{ r.name }}</div>
+        <div style="display:grid;grid-template-columns:repeat(16,1fr);gap:2px"><sc-for list="{{ r.cells }}" as="c" hint-placeholder-count="16"><span style="height:22px;background:{{ c.fill }};outline:2px solid var(--color-text);outline-offset:-2px"></span></sc-for></div>
+      </div>
+    </sc-for>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;border-top:2px solid var(--color-divider)">
+    <div style="padding:12px 0 12px 18px;border-right:2px solid var(--color-divider)"><div style="font:700 9px 'JetBrains Mono';color:var(--color-neutral-600);letter-spacing:.12em">VELOCITY</div><div style="font:800 16px 'Archivo';margin-top:4px">HARD</div></div>
+    <div style="padding:12px 0 12px 18px"><div style="font:700 9px 'JetBrains Mono';color:var(--color-neutral-600);letter-spacing:.12em">PATTERN</div><div style="font:800 16px 'Archivo';margin-top:4px">A · 1 BAR</div></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;border-top:2px solid var(--color-text)">
+    <div style="padding:16px 0 16px 12px;border-right:2px solid var(--color-text);font:800 11px 'Archivo';letter-spacing:.1em">SEND TO LOOP</div>
+    <div style="padding:16px 0 16px 12px;background:var(--color-accent);color:#fff;font:800 11px 'Archivo';letter-spacing:.1em">PLAY PATTERN</div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(5,1fr);border-top:2px solid var(--color-text)">
+    <div style="padding:12px 0 12px 8px;font:800 9px 'Archivo';letter-spacing:.1em">TUNE</div>
+    <div style="padding:12px 0 12px 8px;border-left:2px solid var(--color-text);font:800 9px 'Archivo';letter-spacing:.1em">TEMPO</div>
+    <div style="padding:12px 0 12px 8px;border-left:2px solid var(--color-text);font:800 9px 'Archivo';letter-spacing:.1em">SHEETS</div>
+    <div style="padding:12px 0 12px 8px;border-left:2px solid var(--color-text);font:800 9px 'Archivo';letter-spacing:.1em">LOOP</div>
+    <div style="padding:12px 0 12px 8px;border-left:2px solid var(--color-text);background:var(--color-accent);color:#fff;font:800 9px 'Archivo';letter-spacing:.1em">BEATS</div>
+  </div>
+</div>
+</div>
+
+<div class="dv-opt" id="2f">
+<div class="dv-olabel"><a class="dv-oid" href="#2f">2f</a>Desktop · Metronome</div>
+<div style="width:1240px;height:760px;background:var(--color-bg);border:2px solid var(--color-text);display:flex;flex-direction:column;overflow:hidden">
+  <div style="display:flex;align-items:center;justify-content:space-between;height:60px;padding:0 20px;border-bottom:2px solid var(--color-text)">
+    <div style="display:flex;align-items:baseline;gap:16px"><span style="font:900 26px/1 'Archivo';letter-spacing:-.03em">RIFF</span><span style="font:700 10px 'JetBrains Mono';letter-spacing:.16em;color:var(--color-neutral-700)">PRACTICE DESK · METRONOME</span></div>
+    <div style="display:flex;gap:2px"><span style="font:800 10px 'Archivo';letter-spacing:.1em;padding:9px 12px;background:var(--color-text);color:var(--color-bg)">SESSION: RIFF IN E</span><span style="font:800 10px 'Archivo';letter-spacing:.1em;padding:9px 12px;border:2px solid var(--color-text)">INSTALL APP</span></div>
+  </div>
+  <div style="flex:1;display:grid;grid-template-columns:196px 1fr 400px;min-height:0">
+    <div style="border-right:2px solid var(--color-text);display:flex;flex-direction:column">
+      <div style="padding:14px 0 14px 16px;border-bottom:2px solid var(--color-divider);font:800 13px 'Archivo'">TUNER</div>
+      <div style="padding:14px 0 14px 16px;background:var(--color-accent);color:#fff;border-bottom:2px solid var(--color-text);font:800 13px 'Archivo'">METRONOME</div>
+      <div style="padding:14px 0 14px 16px;border-bottom:2px solid var(--color-divider);font:800 13px 'Archivo'">CHORD SHEETS</div>
+      <div style="padding:14px 0 14px 16px;border-bottom:2px solid var(--color-divider);font:800 13px 'Archivo'">LOOP STATION</div>
+      <div style="padding:14px 0 14px 16px;border-bottom:2px solid var(--color-text);font:800 13px 'Archivo'">BEAT MAKER</div>
+      <div style="padding:16px;font:400 11px/1.5 'Archivo';color:var(--color-neutral-700)">Space starts and stops the click. <b>[</b> and <b>]</b> nudge tempo by one BPM.</div>
+    </div>
+    <div style="display:flex;flex-direction:column;min-width:0">
+      <div style="display:flex;justify-content:space-between;padding:14px 22px;border-bottom:2px solid var(--color-text);font:700 10px 'JetBrains Mono';letter-spacing:.14em;color:var(--color-neutral-700)"><span>MODERATO · 4/4 · EIGHTHS</span><span>RUNNING · BAR 3</span></div>
+      <div style="display:flex;align-items:flex-end;gap:18px;padding:22px 22px 12px"><span style="font:800 190px/.78 'Archivo';letter-spacing:-.06em">96</span><span style="font:700 26px 'JetBrains Mono';color:var(--color-neutral-600);padding-bottom:24px">BPM</span></div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);border-top:2px solid var(--color-text);border-bottom:2px solid var(--color-text)">
+        <div style="height:120px;background:var(--color-accent);border-right:2px solid var(--color-text);padding:10px 0 0 14px;font:800 13px 'Archivo';color:#fff">1</div>
+        <div style="height:120px;border-right:2px solid var(--color-text);padding:10px 0 0 14px;font:800 13px 'Archivo';color:var(--color-neutral-600)">2</div>
+        <div style="height:120px;border-right:2px solid var(--color-text);padding:10px 0 0 14px;font:800 13px 'Archivo';color:var(--color-neutral-600)">3</div>
+        <div style="height:120px;padding:10px 0 0 14px;font:800 13px 'Archivo';color:var(--color-neutral-600)">4</div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);border-bottom:2px solid var(--color-text)">
+        <div style="padding:16px 0 16px 14px;border-right:2px solid var(--color-text);font:800 12px 'Archivo';letter-spacing:.08em">− 1 BPM</div>
+        <div style="padding:16px 0 16px 14px;border-right:2px solid var(--color-text);font:800 12px 'Archivo';letter-spacing:.08em">TAP TEMPO</div>
+        <div style="padding:16px 0 16px 14px;border-right:2px solid var(--color-text);font:800 12px 'Archivo';letter-spacing:.08em">+ 1 BPM</div>
+        <div style="padding:16px 0 16px 14px;background:var(--color-accent);color:#fff;font:800 12px 'Archivo';letter-spacing:.08em">STOP</div>
+      </div>
+      <div style="flex:1;padding:16px 22px;min-height:0">
+        <div style="display:flex;justify-content:space-between;font:700 10px 'JetBrains Mono';letter-spacing:.12em;color:var(--color-neutral-700);margin-bottom:10px"><span>TEMPO TRAINER · 96 → 128 OVER 8 BARS</span><span>38%</span></div>
+        <div style="height:14px;background:var(--color-neutral-300);position:relative"><div style="position:absolute;left:0;top:0;bottom:0;width:38%;background:var(--color-accent)"></div></div>
+      </div>
+    </div>
+    <div style="border-left:2px solid var(--color-text);display:flex;flex-direction:column;min-height:0">
+      <div style="padding:14px 18px;border-bottom:2px solid var(--color-text);font:700 10px 'JetBrains Mono';letter-spacing:.14em;color:var(--color-neutral-700)">SETLIST TEMPOS</div>
+      <sc-for list="{{ setlist }}" as="s" hint-placeholder-count="5">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;padding:14px 18px;border-bottom:2px solid var(--color-divider)"><span style="font:800 13px 'Archivo';letter-spacing:.01em">{{ s.n }}</span><span style="font:700 11px 'JetBrains Mono';color:var(--color-neutral-700)">{{ s.bpm }} · {{ s.key }}</span></div>
+      </sc-for>
+      <div style="padding:16px 18px;flex:1;min-height:0">
+        <div style="font:700 10px 'JetBrains Mono';letter-spacing:.14em;color:var(--color-neutral-700);margin-bottom:10px">CLICK SOUND</div>
+        <div style="display:flex;flex-direction:column;gap:2px">
+          <div style="padding:10px 12px;background:var(--color-accent);color:#fff;font:800 12px 'Archivo'">WOODBLOCK</div>
+          <div style="padding:10px 12px;background:var(--color-neutral-200);font:800 12px 'Archivo'">RIM</div>
+          <div style="padding:10px 12px;background:var(--color-neutral-200);font:800 12px 'Archivo'">BEEP</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="dv-opt" id="2g">
+<div class="dv-olabel"><a class="dv-oid" href="#2g">2g</a>Desktop · Chord sheets</div>
+<div style="width:1240px;height:760px;background:var(--color-bg);border:2px solid var(--color-text);display:flex;flex-direction:column;overflow:hidden">
+  <div style="display:flex;align-items:center;justify-content:space-between;height:60px;padding:0 20px;border-bottom:2px solid var(--color-text)">
+    <div style="display:flex;align-items:baseline;gap:16px"><span style="font:900 26px/1 'Archivo';letter-spacing:-.03em">RIFF</span><span style="font:700 10px 'JetBrains Mono';letter-spacing:.16em;color:var(--color-neutral-700)">PRACTICE DESK · CHORD SHEETS</span></div>
+    <div style="display:flex;gap:2px"><span style="font:800 10px 'Archivo';letter-spacing:.1em;padding:9px 12px;background:var(--color-text);color:var(--color-bg)">AUTOSCROLL 96 BPM</span><span style="font:800 10px 'Archivo';letter-spacing:.1em;padding:9px 12px;border:2px solid var(--color-text)">PRINT SHEET</span></div>
+  </div>
+  <div style="flex:1;display:grid;grid-template-columns:196px 1fr 400px;min-height:0">
+    <div style="border-right:2px solid var(--color-text);display:flex;flex-direction:column">
+      <div style="padding:14px 0 14px 16px;border-bottom:2px solid var(--color-divider);font:800 13px 'Archivo'">TUNER</div>
+      <div style="padding:14px 0 14px 16px;border-bottom:2px solid var(--color-divider);font:800 13px 'Archivo'">METRONOME</div>
+      <div style="padding:14px 0 14px 16px;background:var(--color-accent);color:#fff;border-bottom:2px solid var(--color-text);font:800 13px 'Archivo'">CHORD SHEETS</div>
+      <div style="padding:14px 0 14px 16px;border-bottom:2px solid var(--color-divider);font:800 13px 'Archivo'">LOOP STATION</div>
+      <div style="padding:14px 0 14px 16px;border-bottom:2px solid var(--color-text);font:800 13px 'Archivo'">BEAT MAKER</div>
+      <div style="padding:16px;font:400 11px/1.5 'Archivo';color:var(--color-neutral-700)">Transpose with <b>↑ ↓</b>. Tab and piano views stay in the transposed key.</div>
+    </div>
+    <div style="display:flex;flex-direction:column;min-width:0">
+      <div style="padding:18px 24px;border-bottom:2px solid var(--color-text)">
+        <div style="font:800 46px/1 'Archivo';letter-spacing:-.03em">DEAD AIR ON THE HIGHWAY</div>
+        <div style="font:700 11px 'JetBrains Mono';letter-spacing:.14em;color:var(--color-neutral-700);margin-top:10px">KEY OF E · 96 BPM · 4/4 · SIDE ONE, TRACK ONE</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;border-bottom:2px solid var(--color-text);min-height:0">
+        <div style="padding:18px 24px;border-right:2px solid var(--color-text)">
+          <div style="font:700 10px 'JetBrains Mono';letter-spacing:.14em;color:var(--color-neutral-700);margin-bottom:12px">VERSE 1</div>
+          <div style="font:700 11px/1 'JetBrains Mono';color:var(--color-accent-700)">E5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;G5</div>
+          <div style="font:400 16px/1.55 'Archivo'">Headlights on the county line</div>
+          <div style="font:700 11px/1 'JetBrains Mono';color:var(--color-accent-700);margin-top:10px">A5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;D5</div>
+          <div style="font:400 16px/1.55 'Archivo'">Amp hum keeping perfect time</div>
+        </div>
+        <div style="padding:18px 24px">
+          <div style="font:700 10px 'JetBrains Mono';letter-spacing:.14em;color:var(--color-neutral-700);margin-bottom:12px">CHORUS</div>
+          <div style="font:700 11px/1 'JetBrains Mono';color:var(--color-accent-700)">D5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A5</div>
+          <div style="font:400 16px/1.55 'Archivo'">Dead air, dead air on the dial</div>
+          <div style="font:700 11px/1 'JetBrains Mono';color:var(--color-accent-700);margin-top:10px">E5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;G5</div>
+          <div style="font:400 16px/1.55 'Archivo'">Nothing on for a hundred mile</div>
+        </div>
+      </div>
+      <sc-if value="{{ showTab }}" hint-placeholder-val="{{ true }}">
+      <div style="padding:16px 24px;flex:1;min-height:0">
+        <div style="display:flex;justify-content:space-between;font:700 10px 'JetBrains Mono';letter-spacing:.14em;color:var(--color-neutral-700);margin-bottom:12px"><span>TABLATURE · VERSE RIFF</span><span>{{ tuningLabel }}</span></div>
+        <div style="font:700 15px/1.6 'JetBrains Mono';white-space:pre;overflow:hidden"><sc-for list="{{ tabLines }}" as="l" hint-placeholder-count="6"><div>{{ l }}</div></sc-for></div>
+      </div>
+      </sc-if>
+    </div>
+    <div style="border-left:2px solid var(--color-text);display:flex;flex-direction:column;min-height:0">
+      <div style="padding:14px 18px;border-bottom:2px solid var(--color-text);font:700 10px 'JetBrains Mono';letter-spacing:.14em;color:var(--color-neutral-700)">SETLIST · BASEMENT TAPES</div>
+      <sc-for list="{{ setlist }}" as="s" hint-placeholder-count="5">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;padding:13px 18px;border-bottom:2px solid var(--color-divider)"><span style="font:800 12px 'Archivo'">{{ s.n }}</span><span style="font:700 10px 'JetBrains Mono';color:var(--color-neutral-700)">{{ s.key }} · {{ s.bpm }}</span></div>
+      </sc-for>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;border-bottom:2px solid var(--color-text);border-top:2px solid var(--color-text)">
+        <div style="padding:13px 0 13px 12px;border-right:2px solid var(--color-text);font:800 11px 'Archivo';letter-spacing:.06em">−1</div>
+        <div style="padding:13px 0 13px 12px;border-right:2px solid var(--color-text);font:800 11px 'Archivo';letter-spacing:.06em">CAPO 0</div>
+        <div style="padding:13px 0 13px 12px;font:800 11px 'Archivo';letter-spacing:.06em">+1</div>
+      </div>
+      <div style="padding:16px 18px;flex:1;min-height:0">
+        <div style="display:flex;justify-content:space-between;font:700 10px 'JetBrains Mono';letter-spacing:.14em;color:var(--color-neutral-700);margin-bottom:12px"><span>PIANO VOICING</span><span>E5</span></div>
+        <div style="display:flex;height:100px;border:2px solid var(--color-text)"><sc-for list="{{ keys }}" as="k" hint-placeholder-count="14"><div style="flex:1;border-right:2px solid var(--color-text);background:{{ k.fill }}"></div></sc-for></div>
+        <div style="display:flex;gap:6px;margin-top:14px"><span style="font:800 12px 'Archivo';padding:6px 10px;background:var(--color-accent);color:#fff">E5</span><span style="font:800 12px 'Archivo';padding:6px 10px;border:2px solid var(--color-text)">G5</span><span style="font:800 12px 'Archivo';padding:6px 10px;border:2px solid var(--color-text)">A5</span><span style="font:800 12px 'Archivo';padding:6px 10px;border:2px solid var(--color-text)">D5</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="dv-opt" id="2h">
+<div class="dv-olabel"><a class="dv-oid" href="#2h">2h</a>Desktop · Loop station</div>
+<div style="width:1240px;height:760px;background:var(--color-bg);border:2px solid var(--color-text);display:flex;flex-direction:column;overflow:hidden">
+  <div style="display:flex;align-items:center;justify-content:space-between;height:60px;padding:0 20px;border-bottom:2px solid var(--color-text)">
+    <div style="display:flex;align-items:baseline;gap:16px"><span style="font:900 26px/1 'Archivo';letter-spacing:-.03em">RIFF</span><span style="font:700 10px 'JetBrains Mono';letter-spacing:.16em;color:var(--color-neutral-700)">PRACTICE DESK · LOOP STATION</span></div>
+    <div style="display:flex;gap:2px"><span style="font:800 10px 'Archivo';letter-spacing:.1em;padding:9px 12px;background:var(--color-accent);color:#fff">REC ARMED</span><span style="font:800 10px 'Archivo';letter-spacing:.1em;padding:9px 12px;border:2px solid var(--color-text)">EXPORT STEMS</span></div>
+  </div>
+  <div style="flex:1;display:grid;grid-template-columns:196px 1fr 300px;min-height:0">
+    <div style="border-right:2px solid var(--color-text);display:flex;flex-direction:column">
+      <div style="padding:14px 0 14px 16px;border-bottom:2px solid var(--color-divider);font:800 13px 'Archivo'">TUNER</div>
+      <div style="padding:14px 0 14px 16px;border-bottom:2px solid var(--color-divider);font:800 13px 'Archivo'">METRONOME</div>
+      <div style="padding:14px 0 14px 16px;border-bottom:2px solid var(--color-divider);font:800 13px 'Archivo'">CHORD SHEETS</div>
+      <div style="padding:14px 0 14px 16px;background:var(--color-accent);color:#fff;border-bottom:2px solid var(--color-text);font:800 13px 'Archivo'">LOOP STATION</div>
+      <div style="padding:14px 0 14px 16px;border-bottom:2px solid var(--color-text);font:800 13px 'Archivo'">BEAT MAKER</div>
+      <div style="padding:16px;font:400 11px/1.5 'Archivo';color:var(--color-neutral-700)"><b>R</b> arms the next take. Loops quantize to the bar so a late downbeat still lands.</div>
+    </div>
+    <div style="display:flex;flex-direction:column;min-width:0">
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;padding:16px 22px;border-bottom:2px solid var(--color-text)">
+        <div style="display:flex;align-items:flex-end;gap:14px"><span style="font:800 78px/.85 'Archivo'">4</span><span style="font:700 12px 'JetBrains Mono';letter-spacing:.12em;color:var(--color-neutral-700);padding-bottom:8px">BARS · 96 BPM · QUANTIZE ON</span></div>
+        <span style="font:700 11px 'JetBrains Mono';letter-spacing:.12em;color:var(--color-neutral-700)">BAR 3 / 4 · LATENCY 11 MS</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(16,1fr);border-bottom:2px solid var(--color-text);font:700 8px 'JetBrains Mono';color:var(--color-neutral-600)">
+        <sc-for list="{{ stepNums }}" as="s" hint-placeholder-count="16"><span style="padding:7px 0 7px 5px;border-right:2px solid var(--color-divider)">{{ s.n }}</span></sc-for>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;min-height:0">
+        <sc-for list="{{ loopsWide }}" as="lp" hint-placeholder-count="4">
+          <div style="flex:1;display:flex;align-items:center;gap:16px;padding:0 22px;border-bottom:2px solid var(--color-divider);min-height:0">
+            <div style="width:96px"><div style="font:800 14px 'Archivo';letter-spacing:.06em">{{ lp.name }}</div><div style="font:700 9px 'JetBrains Mono';color:var(--color-neutral-600);margin-top:3px">{{ lp.len }}</div></div>
+            <div style="flex:1;display:flex;align-items:center;gap:2px;height:52px"><sc-for list="{{ lp.bars }}" as="b" hint-placeholder-count="56"><span style="flex:1;background:{{ lp.fill }};height:{{ b.h }}"></span></sc-for></div>
+            <div style="display:flex;gap:4px"><span style="font:700 9px 'JetBrains Mono';letter-spacing:.08em;padding:5px 7px;border:2px solid var(--color-divider)">MUTE</span><span style="font:700 9px 'JetBrains Mono';letter-spacing:.08em;padding:5px 7px;border:2px solid var(--color-divider)">SOLO</span></div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);border-top:2px solid var(--color-text)">
+        <div style="padding:18px 0 18px 14px;background:var(--color-accent);color:#fff;font:800 12px 'Archivo';letter-spacing:.1em">REC</div>
+        <div style="padding:18px 0 18px 14px;border-left:2px solid var(--color-text);font:800 12px 'Archivo';letter-spacing:.1em">PLAY ALL</div>
+        <div style="padding:18px 0 18px 14px;border-left:2px solid var(--color-text);font:800 12px 'Archivo';letter-spacing:.1em">UNDO TAKE</div>
+        <div style="padding:18px 0 18px 14px;border-left:2px solid var(--color-text);font:800 12px 'Archivo';letter-spacing:.1em">CLEAR ALL</div>
+      </div>
+    </div>
+    <div style="border-left:2px solid var(--color-text);display:flex;flex-direction:column;min-height:0">
+      <div style="padding:14px 16px;border-bottom:2px solid var(--color-text);font:700 10px 'JetBrains Mono';letter-spacing:.14em;color:var(--color-neutral-700)">MIXER</div>
+      <div style="flex:1;display:flex;gap:2px;padding:16px;align-items:flex-end;min-height:0">
+        <sc-for list="{{ mixer }}" as="m" hint-placeholder-count="5">
+          <div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;gap:8px;height:100%">
+            <div style="flex:1;background:var(--color-neutral-200);position:relative;min-height:0"><div style="position:absolute;left:0;right:0;bottom:0;height:{{ m.h }};background:var(--color-accent)"></div></div>
+            <div style="font:700 8px 'JetBrains Mono';letter-spacing:.06em">{{ m.name }}</div>
+            <div style="font:700 8px 'JetBrains Mono';color:var(--color-neutral-600)">{{ m.db }}</div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="border-top:2px solid var(--color-text);padding:14px 16px"><div style="font:700 9px 'JetBrains Mono';color:var(--color-neutral-600);letter-spacing:.12em">INPUT</div><div style="font:800 16px 'Archivo';margin-top:4px">MIC · 62%</div></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="dv-opt" id="2i">
+<div class="dv-olabel"><a class="dv-oid" href="#2i">2i</a>Desktop · Beat maker</div>
+<div style="width:1240px;height:760px;background:var(--color-bg);border:2px solid var(--color-text);display:flex;flex-direction:column;overflow:hidden">
+  <div style="display:flex;align-items:center;justify-content:space-between;height:60px;padding:0 20px;border-bottom:2px solid var(--color-text)">
+    <div style="display:flex;align-items:baseline;gap:16px"><span style="font:900 26px/1 'Archivo';letter-spacing:-.03em">RIFF</span><span style="font:700 10px 'JetBrains Mono';letter-spacing:.16em;color:var(--color-neutral-700)">PRACTICE DESK · BEAT MAKER</span></div>
+    <div style="display:flex;gap:2px"><span style="font:800 10px 'Archivo';letter-spacing:.1em;padding:9px 12px;background:var(--color-text);color:var(--color-bg)">PATTERN A</span><span style="font:800 10px 'Archivo';letter-spacing:.1em;padding:9px 12px;border:2px solid var(--color-text)">SEND TO LOOP</span></div>
+  </div>
+  <div style="flex:1;display:grid;grid-template-columns:196px 1fr 300px;min-height:0">
+    <div style="border-right:2px solid var(--color-text);display:flex;flex-direction:column">
+      <div style="padding:14px 0 14px 16px;border-bottom:2px solid var(--color-divider);font:800 13px 'Archivo'">TUNER</div>
+      <div style="padding:14px 0 14px 16px;border-bottom:2px solid var(--color-divider);font:800 13px 'Archivo'">METRONOME</div>
+      <div style="padding:14px 0 14px 16px;border-bottom:2px solid var(--color-divider);font:800 13px 'Archivo'">CHORD SHEETS</div>
+      <div style="padding:14px 0 14px 16px;border-bottom:2px solid var(--color-divider);font:800 13px 'Archivo'">LOOP STATION</div>
+      <div style="padding:14px 0 14px 16px;background:var(--color-accent);color:#fff;border-bottom:2px solid var(--color-text);font:800 13px 'Archivo'">BEAT MAKER</div>
+      <div style="padding:16px;font:400 11px/1.5 'Archivo';color:var(--color-neutral-700)">Click a step to place a hit, drag across a row to fill. Every fourth column is shaded to keep the bar readable.</div>
+    </div>
+    <div style="display:flex;flex-direction:column;min-width:0">
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;padding:16px 22px;border-bottom:2px solid var(--color-text)">
+        <div><div style="font:800 52px/1 'Archivo';letter-spacing:-.03em">GARAGE KIT</div><div style="font:700 11px 'JetBrains Mono';letter-spacing:.14em;color:var(--color-neutral-700);margin-top:8px">96 BPM · 16 STEPS · SWING 12%</div></div>
+        <span style="font:700 11px 'JetBrains Mono';letter-spacing:.12em;color:var(--color-neutral-700)">STEP 07 / 16</span>
+      </div>
+      <div style="display:grid;grid-template-columns:96px repeat(16,1fr);border-bottom:2px solid var(--color-text);font:700 8px 'JetBrains Mono';color:var(--color-neutral-600)">
+        <span style="padding:7px 0 7px 22px"></span>
+        <sc-for list="{{ stepNums }}" as="s" hint-placeholder-count="16"><span style="padding:7px 0 7px 5px;border-left:2px solid var(--color-divider)">{{ s.n }}</span></sc-for>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;min-height:0">
+        <sc-for list="{{ drumRows6 }}" as="r" hint-placeholder-count="6">
+          <div style="flex:1;display:grid;grid-template-columns:96px 1fr;align-items:center;border-bottom:2px solid var(--color-divider);padding:0 22px;gap:14px;min-height:0">
+            <span style="font:800 13px 'Archivo';letter-spacing:.08em">{{ r.name }}</span>
+            <div style="display:grid;grid-template-columns:repeat(16,1fr);gap:3px"><sc-for list="{{ r.cells }}" as="c" hint-placeholder-count="16"><span style="height:44px;background:{{ c.fill }};outline:2px solid var(--color-text);outline-offset:-2px"></span></sc-for></div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);border-top:2px solid var(--color-text)">
+        <div style="padding:18px 0 18px 22px;background:var(--color-accent);color:#fff;font:800 12px 'Archivo';letter-spacing:.1em">PLAY PATTERN</div>
+        <div style="padding:18px 0 18px 14px;border-left:2px solid var(--color-text);font:800 12px 'Archivo';letter-spacing:.1em">CLEAR ROW</div>
+        <div style="padding:18px 0 18px 14px;border-left:2px solid var(--color-text);font:800 12px 'Archivo';letter-spacing:.1em">DUPLICATE BAR</div>
+      </div>
+    </div>
+    <div style="border-left:2px solid var(--color-text);display:flex;flex-direction:column;min-height:0">
+      <div style="padding:14px 16px;border-bottom:2px solid var(--color-text);font:700 10px 'JetBrains Mono';letter-spacing:.14em;color:var(--color-neutral-700)">KITS</div>
+      <div style="padding:14px 0 14px 16px;background:var(--color-accent);color:#fff;border-bottom:2px solid var(--color-divider);font:800 13px 'Archivo'">GARAGE</div>
+      <div style="padding:14px 0 14px 16px;border-bottom:2px solid var(--color-divider);font:800 13px 'Archivo'">ROOM 1972</div>
+      <div style="padding:14px 0 14px 16px;border-bottom:2px solid var(--color-divider);font:800 13px 'Archivo'">DRY STUDIO</div>
+      <div style="padding:14px 0 14px 16px;border-bottom:2px solid var(--color-text);font:800 13px 'Archivo'">MACHINE</div>
+      <div style="padding:16px;display:flex;flex-direction:column;gap:16px;flex:1;min-height:0">
+        <div><div style="display:flex;justify-content:space-between;font:700 9px 'JetBrains Mono';letter-spacing:.12em;color:var(--color-neutral-700);margin-bottom:8px"><span>SWING</span><span>12%</span></div><div style="height:12px;background:var(--color-neutral-300);position:relative"><div style="position:absolute;left:0;top:0;bottom:0;width:24%;background:var(--color-accent)"></div></div></div>
+        <div><div style="display:flex;justify-content:space-between;font:700 9px 'JetBrains Mono';letter-spacing:.12em;color:var(--color-neutral-700);margin-bottom:8px"><span>VELOCITY</span><span>HARD</span></div><div style="height:12px;background:var(--color-neutral-300);position:relative"><div style="position:absolute;left:0;top:0;bottom:0;width:78%;background:var(--color-accent)"></div></div></div>
+        <div><div style="display:flex;justify-content:space-between;font:700 9px 'JetBrains Mono';letter-spacing:.12em;color:var(--color-neutral-700);margin-bottom:8px"><span>ROOM</span><span>32%</span></div><div style="height:12px;background:var(--color-neutral-300);position:relative"><div style="position:absolute;left:0;top:0;bottom:0;width:32%;background:var(--color-accent)"></div></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+</div>
+<p class="dv-next">Try next: "make the desktop tuner <a class="dv-oid" href="#1d">1d</a> match this rail treatment" · "add an offline / install state to <a class="dv-oid" href="#2a">2a</a>" · "tighten the mobile beat maker <a class="dv-oid" href="#2e">2e</a> to 4 rows"</p>
+</section>
+
+<section class="dv-turn" id="t1" style="--color-accent: {{ accent }}">
+<div class="dv-thd"><a class="dv-tid" href="#t1">1</a><span class="dv-tname">RIFF — tuner-first PWA · four artwork directions + the full feature set</span></div>
+
+<div class="dv-opts">
+
+<div class="dv-opt" id="1a">
+<div class="dv-olabel"><a class="dv-oid" href="#1a">1a</a>Mobile · Tuner · Grid — ink on ground, red only where it means something</div>
+<div style="width:390px;height:800px;background:var(--color-bg);border:2px solid var(--color-text);display:flex;flex-direction:column;overflow:hidden">
+  <div style="display:flex;justify-content:space-between;align-items:center;height:30px;padding:0 14px;border-bottom:2px solid var(--color-text);font:700 9px 'JetBrains Mono',monospace;letter-spacing:.14em"><span>9:41</span><span>RIFF PWA</span><span>100%</span></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 18px;border-bottom:2px solid var(--color-text)"><span style="font:900 22px/1 'Archivo';letter-spacing:-.03em">RIFF</span><span style="font:700 10px 'JetBrains Mono';letter-spacing:.14em;background:var(--color-text);color:var(--color-bg);padding:5px 8px">TUNER</span></div>
+  <div style="padding:18px 18px 0;font:700 10px 'JetBrains Mono';letter-spacing:.14em;color:var(--color-neutral-700)">{{ tuningLabel }} · A4 = 440 HZ</div>
+  <div style="display:flex;align-items:flex-end;gap:8px;padding:2px 18px 10px"><span style="font:800 168px/.78 'Archivo';letter-spacing:-.06em">{{ note }}</span><span style="font:700 34px/1 'JetBrains Mono';color:var(--color-neutral-600);padding-bottom:14px">{{ oct }}</span></div>
+  <div style="padding:0 18px 14px">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;height:34px;border-bottom:2px solid var(--color-text)">
+      <sc-for list="{{ ticks }}" as="t" hint-placeholder-count="21"><span style="width:2px;background:var(--color-neutral-500);height:{{ t.h }}"></span></sc-for>
+    </div>
+    <div style="position:relative;height:0"><div style="position:absolute;left:53%;top:-46px;width:4px;height:46px;background:var(--color-accent)"></div></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding-top:12px"><span style="font:700 13px 'JetBrains Mono';letter-spacing:.1em">+3 CENTS · SHARP</span><span style="font:800 10px 'Archivo';letter-spacing:.14em;background:var(--color-accent);color:#fff;padding:6px 10px">IN TUNE</span></div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(6,1fr);border-top:2px solid var(--color-text)">
+    <sc-for list="{{ strings }}" as="s" hint-placeholder-count="6"><div style="border-right:2px solid var(--color-text);padding:14px 0 14px 8px"><div style="font:800 20px/1 'Archivo'">{{ s.n }}</div><div style="font:400 9px 'JetBrains Mono';color:var(--color-neutral-600);margin-top:4px">{{ s.o }}</div></div></sc-for>
+  </div>
+  <div style="flex:1;border-top:2px solid var(--color-text);padding:16px 18px;display:flex;flex-direction:column;gap:12px">
+    <div style="font:700 10px 'JetBrains Mono';letter-spacing:.14em;color:var(--color-neutral-700)">MIC INPUT · CHROMATIC</div>
+    <div style="display:flex;align-items:flex-end;gap:3px;height:66px">
+      <sc-for list="{{ bars }}" as="b" hint-placeholder-count="28"><span style="flex:1;background:var(--color-neutral-400);height:{{ b.h }}"></span></sc-for>
+    </div>
+    <div style="border-top:2px solid var(--color-divider);padding-top:12px;font:400 12px/1.4 'Archivo';color:var(--color-neutral-800)">Play a string. RIFF listens and holds the last reading for two seconds so you can look up at the room.</div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(5,1fr);border-top:2px solid var(--color-text)">
+    <div style="padding:12px 0 12px 8px;background:var(--color-accent);color:#fff;font:800 9px 'Archivo';letter-spacing:.1em">TUNE</div>
+    <div style="padding:12px 0 12px 8px;border-left:2px solid var(--color-text);font:800 9px 'Archivo';letter-spacing:.1em">TEMPO</div>
+    <div style="padding:12px 0 12px 8px;border-left:2px solid var(--color-text);font:800 9px 'Archivo';letter-spacing:.1em">SHEETS</div>
+    <div style="padding:12px 0 12px 8px;border-left:2px solid var(--color-text);font:800 9px 'Archivo';letter-spacing:.1em">LOOP</div>
+    <div style="padding:12px 0 12px 8px;border-left:2px solid var(--color-text);font:800 9px 'Archivo';letter-spacing:.1em">BEATS</div>
+  </div>
+</div>
+</div>
+
+<div class="dv-opt" id="1b">
+<div class="dv-olabel"><a class="dv-oid" href="#1b">1b</a>Mobile · Tuner · Poster — the screen is the red field, type does the work</div>
+<div style="width:390px;height:800px;background:var(--color-accent);color:#fff;border:2px solid var(--color-text);display:flex;flex-direction:column;overflow:hidden">
+  <div style="display:flex;justify-content:space-between;align-items:center;height:30px;padding:0 14px;border-bottom:2px solid #fff;font:700 9px 'JetBrains Mono';letter-spacing:.14em"><span>9:41</span><span>RIFF PWA</span><span>100%</span></div>
+  <div style="padding:20px 18px 0;font:700 10px 'JetBrains Mono';letter-spacing:.16em">RIFF / TUNER / {{ tuningLabel }}</div>
+  <div style="padding:6px 12px 0"><div style="font:900 260px/.72 'Archivo';letter-spacing:-.08em">{{ note }}</div></div>
+  <div style="padding:0 18px;display:flex;align-items:baseline;gap:12px"><span style="font:900 62px/1 'Archivo'">{{ oct }}</span><span style="font:700 14px 'JetBrains Mono';letter-spacing:.1em">+3 CENTS</span></div>
+  <div style="margin:22px 18px 0;height:14px;background:rgba(255,255,255,.32);position:relative"><div style="position:absolute;left:53%;top:-8px;width:4px;height:30px;background:#fff"></div></div>
+  <div style="padding:18px;font:800 44px/.95 'Archivo';letter-spacing:-.03em">IN<br>TUNE.</div>
+  <div style="flex:1"></div>
+  <div style="display:grid;grid-template-columns:repeat(6,1fr);border-top:2px solid #fff">
+    <sc-for list="{{ strings }}" as="s" hint-placeholder-count="6"><div style="border-right:2px solid #fff;padding:12px 0 12px 8px;font:800 18px/1 'Archivo'">{{ s.n }}</div></sc-for>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(5,1fr);border-top:2px solid #fff;background:var(--color-text)">
+    <div style="padding:13px 0 13px 8px;font:800 9px 'Archivo';letter-spacing:.1em;background:#fff;color:var(--color-text)">TUNE</div>
+    <div style="padding:13px 0 13px 8px;font:800 9px 'Archivo';letter-spacing:.1em">TEMPO</div>
+    <div style="padding:13px 0 13px 8px;font:800 9px 'Archivo';letter-spacing:.1em">SHEETS</div>
+    <div style="padding:13px 0 13px 8px;font:800 9px 'Archivo';letter-spacing:.1em">LOOP</div>
+    <div style="padding:13px 0 13px 8px;font:800 9px 'Archivo';letter-spacing:.1em">BEATS</div>
+  </div>
+</div>
+</div>
+
+<div class="dv-opt" id="1c">
+<div class="dv-olabel"><a class="dv-oid" href="#1c">1c</a>Mobile · Tuner · Ink — stage-dark, one red mark, readable at a floor angle</div>
+<div style="width:390px;height:800px;background:var(--color-text);color:#f3f2f2;border:2px solid var(--color-text);display:flex;flex-direction:column;overflow:hidden">
+  <div style="display:flex;justify-content:space-between;align-items:center;height:30px;padding:0 14px;border-bottom:2px solid rgba(243,242,242,.5);font:700 9px 'JetBrains Mono';letter-spacing:.14em"><span>9:41</span><span>RIFF PWA</span><span>100%</span></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 18px;border-bottom:2px solid rgba(243,242,242,.5)"><span style="font:900 22px/1 'Archivo';letter-spacing:-.03em">RIFF</span><span style="font:700 10px 'JetBrains Mono';letter-spacing:.14em;color:var(--color-accent-400)">TUNER</span></div>
+  <div style="padding:22px 18px 0;font:700 10px 'JetBrains Mono';letter-spacing:.14em;color:rgba(243,242,242,.6)">{{ tuningLabel }} · STRING 6</div>
+  <div style="display:flex;align-items:flex-end;gap:10px;padding:4px 18px 16px"><span style="font:800 176px/.8 'Archivo';letter-spacing:-.06em">{{ note }}</span><span style="font:700 32px/1 'JetBrains Mono';color:var(--color-accent-400);padding-bottom:16px">{{ oct }}</span></div>
+  <div style="margin:0 18px;height:120px;border-top:2px solid rgba(243,242,242,.5);border-bottom:2px solid rgba(243,242,242,.5);position:relative;display:flex;align-items:center;justify-content:space-between">
+    <sc-for list="{{ ticks }}" as="t" hint-placeholder-count="21"><span style="width:2px;background:rgba(243,242,242,.35);height:{{ t.h }}"></span></sc-for>
+    <div style="position:absolute;left:53%;top:0;bottom:0;width:4px;background:var(--color-accent)"></div>
+  </div>
+  <div style="display:flex;justify-content:space-between;padding:14px 18px;font:700 12px 'JetBrains Mono';letter-spacing:.1em"><span style="color:rgba(243,242,242,.55)">−50</span><span style="color:var(--color-accent-400)">+3 CENTS</span><span style="color:rgba(243,242,242,.55)">+50</span></div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);border-top:2px solid rgba(243,242,242,.5)">
+    <div style="padding:14px 0 14px 10px;border-right:2px solid rgba(243,242,242,.5)"><div style="font:700 9px 'JetBrains Mono';color:rgba(243,242,242,.55);letter-spacing:.12em">REF</div><div style="font:800 18px 'Archivo';margin-top:4px">440</div></div>
+    <div style="padding:14px 0 14px 10px;border-right:2px solid rgba(243,242,242,.5)"><div style="font:700 9px 'JetBrains Mono';color:rgba(243,242,242,.55);letter-spacing:.12em">MODE</div><div style="font:800 18px 'Archivo';margin-top:4px">CHROM</div></div>
+    <div style="padding:14px 0 14px 10px"><div style="font:700 9px 'JetBrains Mono';color:rgba(243,242,242,.55);letter-spacing:.12em">CAPO</div><div style="font:800 18px 'Archivo';margin-top:4px">OFF</div></div>
+  </div>
+  <div style="flex:1;border-top:2px solid rgba(243,242,242,.5);padding:16px 18px">
+    <div style="font:700 10px 'JetBrains Mono';letter-spacing:.14em;color:rgba(243,242,242,.6);margin-bottom:12px">ALTERNATE TUNINGS</div>
+    <div style="display:flex;flex-direction:column;gap:2px">
+      <div style="display:flex;justify-content:space-between;padding:11px 12px;background:var(--color-accent);color:#fff;font:800 13px 'Archivo';letter-spacing:.02em"><span>STANDARD E</span><span style="font:700 10px 'JetBrains Mono'">E A D G B E</span></div>
+      <div style="display:flex;justify-content:space-between;padding:11px 12px;background:rgba(243,242,242,.09);font:800 13px 'Archivo'"><span>DROP D</span><span style="font:700 10px 'JetBrains Mono';color:rgba(243,242,242,.6)">D A D G B E</span></div>
+      <div style="display:flex;justify-content:space-between;padding:11px 12px;background:rgba(243,242,242,.09);font:800 13px 'Archivo'"><span>OPEN G</span><span style="font:700 10px 'JetBrains Mono';color:rgba(243,242,242,.6)">D G D G B D</span></div>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(5,1fr);border-top:2px solid rgba(243,242,242,.5)">
+    <div style="padding:13px 0 13px 8px;background:var(--color-accent);color:#fff;font:800 9px 'Archivo';letter-spacing:.1em">TUNE</div>
+    <div style="padding:13px 0 13px 8px;border-left:2px solid rgba(243,242,242,.5);font:800 9px 'Archivo';letter-spacing:.1em;color:rgba(243,242,242,.7)">TEMPO</div>
+    <div style="padding:13px 0 13px 8px;border-left:2px solid rgba(243,242,242,.5);font:800 9px 'Archivo';letter-spacing:.1em;color:rgba(243,242,242,.7)">SHEETS</div>
+    <div style="padding:13px 0 13px 8px;border-left:2px solid rgba(243,242,242,.5);font:800 9px 'Archivo';letter-spacing:.1em;color:rgba(243,242,242,.7)">LOOP</div>
+    <div style="padding:13px 0 13px 8px;border-left:2px solid rgba(243,242,242,.5);font:800 9px 'Archivo';letter-spacing:.1em;color:rgba(243,242,242,.7)">BEATS</div>
+  </div>
+</div>
+</div>
+
+<div class="dv-opt" id="1d">
+<div class="dv-olabel"><a class="dv-oid" href="#1d">1d</a>Desktop web · practice desk — tuner hero, sheet + tab beside it</div>
+<div style="width:1240px;height:800px;background:var(--color-bg);border:2px solid var(--color-text);display:flex;flex-direction:column;overflow:hidden">
+  <div style="display:flex;align-items:center;justify-content:space-between;height:60px;padding:0 20px;border-bottom:2px solid var(--color-text)">
+    <div style="display:flex;align-items:baseline;gap:16px"><span style="font:900 26px/1 'Archivo';letter-spacing:-.03em">RIFF</span><span style="font:700 10px 'JetBrains Mono';letter-spacing:.16em;color:var(--color-neutral-700)">PRACTICE DESK · OFFLINE-CAPABLE</span></div>
+    <div style="display:flex;align-items:center;gap:2px">
+      <span style="font:800 10px 'Archivo';letter-spacing:.1em;padding:9px 12px;background:var(--color-text);color:var(--color-bg)">SESSION: RIFF IN E</span>
+      <span style="font:800 10px 'Archivo';letter-spacing:.1em;padding:9px 12px;border:2px solid var(--color-text)">INSTALL APP</span>
+    </div>
+  </div>
+  <div style="flex:1;display:grid;grid-template-columns:196px 1fr 400px;min-height:0">
+    <div style="border-right:2px solid var(--color-text);display:flex;flex-direction:column">
+      <div style="padding:14px 0 14px 16px;background:var(--color-accent);color:#fff;font:800 13px 'Archivo';letter-spacing:.04em;border-bottom:2px solid var(--color-text)">TUNER</div>
+      <div style="padding:14px 0 14px 16px;border-bottom:2px solid var(--color-divider);font:800 13px 'Archivo'">METRONOME</div>
+      <div style="padding:14px 0 14px 16px;border-bottom:2px solid var(--color-divider);font:800 13px 'Archivo'">CHORD SHEETS</div>
+      <div style="padding:14px 0 14px 16px;border-bottom:2px solid var(--color-divider);font:800 13px 'Archivo'">LOOP STATION</div>
+      <div style="padding:14px 0 14px 16px;border-bottom:2px solid var(--color-text);font:800 13px 'Archivo'">BEAT MAKER</div>
+      <div style="padding:16px;font:400 11px/1.5 'Archivo';color:var(--color-neutral-700)">Keyboard: <b>1–5</b> switches tool, <b>space</b> starts the click, <b>R</b> arms a loop.</div>
+    </div>
+    <div style="display:flex;flex-direction:column;min-width:0">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 22px;border-bottom:2px solid var(--color-text);font:700 10px 'JetBrains Mono';letter-spacing:.14em;color:var(--color-neutral-700)"><span>{{ tuningLabel }} · A4 = 440 HZ · CHROMATIC</span><span>MIC LEVEL 62%</span></div>
+      <div style="display:flex;align-items:flex-end;gap:14px;padding:20px 22px 8px"><span style="font:800 210px/.76 'Archivo';letter-spacing:-.07em">{{ note }}</span><span style="font:700 44px/1 'JetBrains Mono';color:var(--color-neutral-600);padding-bottom:22px">{{ oct }}</span><span style="font:800 12px 'Archivo';letter-spacing:.14em;background:var(--color-accent);color:#fff;padding:8px 12px;margin-bottom:30px">IN TUNE</span></div>
+      <div style="padding:0 22px 18px">
+        <div style="display:flex;align-items:flex-end;justify-content:space-between;height:46px;border-bottom:2px solid var(--color-text)">
+          <sc-for list="{{ ticks }}" as="t" hint-placeholder-count="21"><span style="width:2px;background:var(--color-neutral-500);height:{{ t.h }}"></span></sc-for>
+        </div>
+        <div style="position:relative;height:0"><div style="position:absolute;left:53%;top:-60px;width:4px;height:60px;background:var(--color-accent)"></div></div>
+        <div style="display:flex;justify-content:space-between;padding-top:12px;font:700 11px 'JetBrains Mono';letter-spacing:.1em;color:var(--color-neutral-700)"><span>−50</span><span style="color:var(--color-text)">+3 CENTS SHARP</span><span>+50</span></div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(6,1fr);border-top:2px solid var(--color-text)">
+        <sc-for list="{{ strings }}" as="s" hint-placeholder-count="6"><div style="border-right:2px solid var(--color-text);padding:14px 0 14px 12px"><div style="font:800 22px/1 'Archivo'">{{ s.n }}</div><div style="font:400 9px 'JetBrains Mono';color:var(--color-neutral-600);margin-top:5px">{{ s.o }}</div></div></sc-for>
+      </div>
+      <div style="flex:1;border-top:2px solid var(--color-text);padding:18px 22px;display:flex;flex-direction:column;gap:14px;min-height:0">
+        <div style="display:flex;justify-content:space-between;font:700 10px 'JetBrains Mono';letter-spacing:.14em;color:var(--color-neutral-700)"><span>METRONOME · RUNNING</span><span>4/4</span></div>
+        <div style="display:flex;align-items:baseline;gap:16px"><span style="font:800 76px/1 'Archivo';letter-spacing:-.04em">96</span><span style="font:700 12px 'JetBrains Mono';letter-spacing:.14em;color:var(--color-neutral-700)">BPM</span>
+          <div style="display:flex;gap:6px;margin-left:auto">
+            <div style="width:44px;height:44px;background:var(--color-accent)"></div>
+            <div style="width:44px;height:44px;border:2px solid var(--color-text)"></div>
+            <div style="width:44px;height:44px;border:2px solid var(--color-text)"></div>
+            <div style="width:44px;height:44px;border:2px solid var(--color-text)"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="border-left:2px solid var(--color-text);display:flex;flex-direction:column;min-height:0">
+      <div style="padding:14px 18px;border-bottom:2px solid var(--color-text);font:700 10px 'JetBrains Mono';letter-spacing:.14em;color:var(--color-neutral-700)">CHORD SHEET · SIDE ONE</div>
+      <div style="padding:16px 18px;border-bottom:2px solid var(--color-divider)">
+        <div style="font:800 24px/1.05 'Archivo';letter-spacing:-.02em">DEAD AIR<br>ON THE HIGHWAY</div>
+        <div style="font:700 10px 'JetBrains Mono';letter-spacing:.12em;color:var(--color-neutral-700);margin-top:8px">KEY OF E · 96 BPM · VERSE</div>
+      </div>
+      <div style="padding:16px 18px;border-bottom:2px solid var(--color-divider);display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;gap:6px"><span style="font:800 12px 'Archivo';padding:6px 10px;background:var(--color-accent);color:#fff">E5</span><span style="font:800 12px 'Archivo';padding:6px 10px;border:2px solid var(--color-text)">G5</span><span style="font:800 12px 'Archivo';padding:6px 10px;border:2px solid var(--color-text)">A5</span><span style="font:800 12px 'Archivo';padding:6px 10px;border:2px solid var(--color-text)">D5</span></div>
+        <div style="font:400 14px/1.9 'Archivo';color:var(--color-neutral-900)">Headlights on the county line<br>Amp hum keeping perfect time</div>
+      </div>
+      <sc-if value="{{ showTab }}" hint-placeholder-val="{{ true }}">
+      <div style="padding:16px 18px;border-bottom:2px solid var(--color-divider)">
+        <div style="font:700 10px 'JetBrains Mono';letter-spacing:.14em;color:var(--color-neutral-700);margin-bottom:10px">TABLATURE</div>
+        <div style="font:700 12px/1.55 'JetBrains Mono';white-space:pre;overflow:hidden">
+          <sc-for list="{{ tabLines }}" as="l" hint-placeholder-count="6"><div>{{ l }}</div></sc-for>
+        </div>
+      </div>
+      </sc-if>
+      <div style="padding:12px 18px 14px;flex:1;min-height:0">
+        <div style="font:700 10px 'JetBrains Mono';letter-spacing:.14em;color:var(--color-neutral-700);margin-bottom:8px">LOOP STATION · 4 TRACKS</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <sc-for list="{{ loops }}" as="lp" hint-placeholder-count="4">
+            <div style="display:flex;align-items:center;gap:10px;border:2px solid var(--color-text);padding:6px 10px">
+              <span style="font:800 10px 'Archivo';letter-spacing:.08em;width:58px">{{ lp.name }}</span>
+              <div style="flex:1;display:flex;align-items:center;gap:2px;height:22px">
+                <sc-for list="{{ lp.bars }}" as="b" hint-placeholder-count="22"><span style="flex:1;background:{{ lp.fill }};height:{{ b.h }}"></span></sc-for>
+              </div>
+              <span style="font:700 9px 'JetBrains Mono';color:var(--color-neutral-600)">{{ lp.len }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="dv-opt" id="1e">
+<div class="dv-olabel"><a class="dv-oid" href="#1e">1e</a>Mobile · the other four tools in the <a class="dv-oid" href="#1a">1a</a> direction</div>
+<div style="display:flex;gap:20px">
+
+  <div style="width:320px;height:640px;background:var(--color-bg);border:2px solid var(--color-text);display:flex;flex-direction:column;overflow:hidden">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:14px;border-bottom:2px solid var(--color-text)"><span style="font:900 16px 'Archivo'">METRONOME</span><span style="font:700 9px 'JetBrains Mono';letter-spacing:.12em">4/4</span></div>
+    <div style="padding:22px 16px 8px;display:flex;align-items:baseline;gap:10px"><span style="font:800 120px/.8 'Archivo';letter-spacing:-.05em">96</span><span style="font:700 14px 'JetBrains Mono';color:var(--color-neutral-600)">BPM</span></div>
+    <div style="padding:0 16px 18px;font:700 10px 'JetBrains Mono';letter-spacing:.12em;color:var(--color-neutral-700)">MODERATO · TAP TO SET</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:2px;padding:0 16px 18px">
+      <div style="height:64px;background:var(--color-accent)"></div>
+      <div style="height:64px;border:2px solid var(--color-text)"></div>
+      <div style="height:64px;border:2px solid var(--color-text)"></div>
+      <div style="height:64px;border:2px solid var(--color-text)"></div>
+    </div>
+    <div style="border-top:2px solid var(--color-text);display:grid;grid-template-columns:1fr 1fr">
+      <div style="padding:16px 0 16px 12px;border-right:2px solid var(--color-text)"><div style="font:700 9px 'JetBrains Mono';color:var(--color-neutral-600);letter-spacing:.12em">SUBDIVISION</div><div style="font:800 17px 'Archivo';margin-top:4px">EIGHTHS</div></div>
+      <div style="padding:16px 0 16px 12px"><div style="font:700 9px 'JetBrains Mono';color:var(--color-neutral-600);letter-spacing:.12em">ACCENT</div><div style="font:800 17px 'Archivo';margin-top:4px">BEAT 1</div></div>
+    </div>
+    <div style="flex:1;border-top:2px solid var(--color-text);padding:16px;font:400 12px/1.5 'Archivo';color:var(--color-neutral-800)">Tempo trainer ramps 96 → 128 over eight bars, then holds.</div>
+    <div style="border-top:2px solid var(--color-text);padding:16px 0 16px 14px;background:var(--color-accent);color:#fff;font:800 12px 'Archivo';letter-spacing:.12em">START CLICK</div>
+  </div>
+
+  <div style="width:320px;height:640px;background:var(--color-bg);border:2px solid var(--color-text);display:flex;flex-direction:column;overflow:hidden">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:14px;border-bottom:2px solid var(--color-text)"><span style="font:900 16px 'Archivo'">CHORD SHEET</span><span style="font:700 9px 'JetBrains Mono';letter-spacing:.12em">KEY E</span></div>
+    <div style="padding:14px;border-bottom:2px solid var(--color-divider)"><div style="font:800 20px/1.05 'Archivo'">DEAD AIR ON<br>THE HIGHWAY</div></div>
+    <div style="padding:12px 14px;border-bottom:2px solid var(--color-divider);display:flex;gap:6px"><span style="font:800 11px 'Archivo';padding:6px 9px;background:var(--color-accent);color:#fff">E5</span><span style="font:800 11px 'Archivo';padding:6px 9px;border:2px solid var(--color-text)">G5</span><span style="font:800 11px 'Archivo';padding:6px 9px;border:2px solid var(--color-text)">A5</span><span style="font:800 11px 'Archivo';padding:6px 9px;border:2px solid var(--color-text)">D5</span></div>
+    <div style="padding:12px 14px;font:400 13px/1.85 'Archivo';border-bottom:2px solid var(--color-divider)">Headlights on the county line<br>Amp hum keeping perfect time</div>
+    <div style="padding:12px 14px;border-bottom:2px solid var(--color-divider)">
+      <div style="font:700 9px 'JetBrains Mono';letter-spacing:.12em;color:var(--color-neutral-700);margin-bottom:8px">TAB · VERSE RIFF</div>
+      <div style="font:700 10.5px/1.5 'JetBrains Mono';white-space:pre;overflow:hidden"><sc-for list="{{ tabLines }}" as="l" hint-placeholder-count="6"><div>{{ l }}</div></sc-for></div>
+    </div>
+    <div style="padding:12px 14px;flex:1">
+      <div style="font:700 9px 'JetBrains Mono';letter-spacing:.12em;color:var(--color-neutral-700);margin-bottom:10px">PIANO VOICING · E5</div>
+      <div style="display:flex;height:78px;border:2px solid var(--color-text)">
+        <sc-for list="{{ keys }}" as="k" hint-placeholder-count="14"><div style="flex:1;border-right:2px solid var(--color-text);background:{{ k.fill }}"></div></sc-for>
+      </div>
+    </div>
+    <div style="border-top:2px solid var(--color-text);padding:16px 0 16px 14px;font:800 12px 'Archivo';letter-spacing:.12em">TRANSPOSE · AUTOSCROLL</div>
+  </div>
+
+  <div style="width:320px;height:640px;background:var(--color-bg);border:2px solid var(--color-text);display:flex;flex-direction:column;overflow:hidden">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:14px;border-bottom:2px solid var(--color-text)"><span style="font:900 16px 'Archivo'">LOOP STATION</span><span style="font:700 9px 'JetBrains Mono';letter-spacing:.12em;color:var(--color-accent-700)">REC ARMED</span></div>
+    <div style="padding:16px 14px;border-bottom:2px solid var(--color-text);display:flex;align-items:baseline;gap:10px"><span style="font:800 64px/.9 'Archivo'">4</span><span style="font:700 11px 'JetBrains Mono';letter-spacing:.12em;color:var(--color-neutral-700)">BARS · 96 BPM</span></div>
+    <div style="padding:14px;display:flex;flex-direction:column;gap:10px;flex:1">
+      <sc-for list="{{ loops }}" as="lp" hint-placeholder-count="4">
+        <div style="border:2px solid var(--color-text);padding:10px">
+          <div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="font:800 11px 'Archivo';letter-spacing:.08em">{{ lp.name }}</span><span style="font:700 9px 'JetBrains Mono';color:var(--color-neutral-600)">{{ lp.len }}</span></div>
+          <div style="display:flex;align-items:center;gap:2px;height:26px"><sc-for list="{{ lp.bars }}" as="b" hint-placeholder-count="22"><span style="flex:1;background:{{ lp.fill }};height:{{ b.h }}"></span></sc-for></div>
+        </div>
+      </sc-for>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;border-top:2px solid var(--color-text)">
+      <div style="padding:16px 0 16px 12px;background:var(--color-accent);color:#fff;font:800 11px 'Archivo';letter-spacing:.1em">REC</div>
+      <div style="padding:16px 0 16px 12px;border-left:2px solid var(--color-text);font:800 11px 'Archivo';letter-spacing:.1em">PLAY</div>
+      <div style="padding:16px 0 16px 12px;border-left:2px solid var(--color-text);font:800 11px 'Archivo';letter-spacing:.1em">UNDO</div>
+    </div>
+  </div>
+
+  <div style="width:320px;height:640px;background:var(--color-bg);border:2px solid var(--color-text);display:flex;flex-direction:column;overflow:hidden">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:14px;border-bottom:2px solid var(--color-text)"><span style="font:900 16px 'Archivo'">BEAT MAKER</span><span style="font:700 9px 'JetBrains Mono';letter-spacing:.12em">16 STEPS</span></div>
+    <div style="padding:16px 14px;border-bottom:2px solid var(--color-text)"><div style="font:800 40px/1 'Archivo';letter-spacing:-.02em">GARAGE KIT</div><div style="font:700 10px 'JetBrains Mono';letter-spacing:.12em;color:var(--color-neutral-700);margin-top:6px">96 BPM · SWING 12%</div></div>
+    <div style="padding:14px;display:flex;flex-direction:column;gap:12px;flex:1">
+      <sc-for list="{{ drumRows }}" as="r" hint-placeholder-count="4">
+        <div>
+          <div style="font:800 10px 'Archivo';letter-spacing:.1em;margin-bottom:6px">{{ r.name }}</div>
+          <div style="display:grid;grid-template-columns:repeat(16,1fr);gap:2px">
+            <sc-for list="{{ r.cells }}" as="c" hint-placeholder-count="16"><span style="height:22px;background:{{ c.fill }};outline:2px solid var(--color-text);outline-offset:-2px"></span></sc-for>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+    <div style="border-top:2px solid var(--color-text);display:grid;grid-template-columns:1fr 1fr">
+      <div style="padding:16px 0 16px 12px;border-right:2px solid var(--color-text);font:800 11px 'Archivo';letter-spacing:.1em">SEND TO LOOP</div>
+      <div style="padding:16px 0 16px 12px;background:var(--color-accent);color:#fff;font:800 11px 'Archivo';letter-spacing:.1em">PLAY PATTERN</div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+</div>
+<p class="dv-next">Try next: "build out <a class="dv-oid" href="#1c">1c</a> as the real direction across all five tools" · "give me <a class="dv-oid" href="#1b">1b</a>'s poster type on the desktop layout <a class="dv-oid" href="#1d">1d</a>" · "new artwork directions, less type-driven"</p>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;accent&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#ec3013&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;#ec3013&quot;,&quot;#201e1d&quot;,&quot;#0b5c3b&quot;,&quot;#1d3fbf&quot;],&quot;section&quot;:&quot;Artwork&quot;},&quot;tuning&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;Standard E&quot;,&quot;options&quot;:[&quot;Standard E&quot;,&quot;Drop D&quot;,&quot;Open G&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Tuner&quot;},&quot;showTab&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Chord sheets&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const tuning = this.props.tuning ?? "Standard E";
+    const sets = {
+      "Standard E": ["E2","A2","D3","G3","B3","E4"],
+      "Drop D": ["D2","A2","D3","G3","B3","E4"],
+      "Open G": ["D2","G2","D3","G3","B3","D4"]
+    };
+    const strings = (sets[tuning] || sets["Standard E"]).map(s => ({ n: s[0], o: s }));
+    const ticks = Array.from({ length: 21 }, (_, i) => ({
+      h: (i === 10 ? 30 : i % 5 === 0 ? 20 : 11) + "px"
+    }));
+    const seed = n => (Math.sin(n * 12.9898) * 43758.5453) % 1;
+    const bars = Array.from({ length: 28 }, (_, i) => ({
+      h: (14 + Math.abs(seed(i + 1)) * 52).toFixed(0) + "px"
+    }));
+    const mkBars = (o, dense) => Array.from({ length: 22 }, (_, i) => ({
+      h: (dense ? 6 + Math.abs(seed(i + o)) * 16 : 3 + Math.abs(seed(i + o)) * 9).toFixed(0) + "px"
+    }));
+    const ink = "var(--color-text)", red = "var(--color-accent)";
+    const loops = [
+      { name: "RHYTHM", len: "4 BAR", fill: red, bars: mkBars(3, true) },
+      { name: "LEAD", len: "4 BAR", fill: ink, bars: mkBars(11, true) },
+      { name: "BASS", len: "2 BAR", fill: ink, bars: mkBars(23, false) },
+      { name: "VOX", len: "EMPTY", fill: "var(--color-neutral-300)", bars: mkBars(37, false) }
+    ];
+    const tabLines = [
+      "e|--------------------------|",
+      "B|--------------------------|",
+      "G|---------7-7-7------------|",
+      "D|--7-7-7--7-7-7-----5-5-5--|",
+      "A|--7-7-7--5-5-5-----5-5-5--|",
+      "E|--5-5-5------------3-3-3--|"
+    ];
+    const litKeys = [0, 4, 7, 11];
+    const keys = Array.from({ length: 14 }, (_, i) => ({
+      fill: litKeys.indexOf(i) > -1 ? red : (i % 7 === 1 || i % 7 === 3 || i % 7 === 5 ? ink : "transparent")
+    }));
+    const pat = {
+      KICK:  [1,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0],
+      SNARE: [0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,1],
+      HAT:   [1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1],
+      CRASH: [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+    };
+    const drumRows = Object.keys(pat).map(k => ({
+      name: k,
+      cells: pat[k].map(v => ({ fill: v ? red : "transparent" }))
+    }));
+    const loopsWide = loops.map((lp, i) => ({
+      ...lp,
+      bars: Array.from({ length: 56 }, (_, j) => ({
+        h: (lp.name === "VOX" ? 4 + Math.abs(seed(j + i * 7)) * 10 : 8 + Math.abs(seed(j + i * 7)) * 34).toFixed(0) + "px"
+      }))
+    }));
+    const pat6 = {
+      KICK:  [1,0,0,0,0,0,1,0,1,0,0,0,0,0,1,0],
+      SNARE: [0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,1],
+      HAT:   [1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1],
+      CLAP:  [0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0],
+      TOM:   [0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1],
+      CRASH: [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+    };
+    const drumRows6 = Object.keys(pat6).map(k => ({
+      name: k,
+      cells: pat6[k].map((v, i) => ({ fill: v ? red : (i % 4 === 0 ? "var(--color-neutral-200)" : "transparent") }))
+    }));
+    const stepNums = Array.from({ length: 16 }, (_, i) => ({ n: String(i + 1).padStart(2, "0") }));
+    const setlist = [
+      { n: "DEAD AIR ON THE HIGHWAY", key: "E", bpm: "96", state: "NOW" },
+      { n: "CHEAP AMPLIFIER", key: "A", bpm: "112", state: "" },
+      { n: "SIDE ONE, TRACK TWO", key: "D", bpm: "84", state: "" },
+      { n: "NIGHT SHIFT BLUES", key: "G", bpm: "72", state: "" },
+      { n: "BASEMENT TAPE", key: "C", bpm: "128", state: "" }
+    ];
+    const mixer = [
+      { name: "RHYTHM", h: "78%", db: "−2.0" },
+      { name: "LEAD", h: "62%", db: "−5.5" },
+      { name: "BASS", h: "70%", db: "−3.5" },
+      { name: "VOX", h: "0%", db: "OFF" },
+      { name: "BEATS", h: "54%", db: "−7.0" }
+    ];
+    return {
+      loopsWide, drumRows6, stepNums, setlist, mixer,
+      accent: this.props.accent ?? "#ec3013",
+      tuning, tuningLabel: tuning.toUpperCase(), strings, ticks, bars, loops,
+      tabLines, keys, drumRows,
+      note: strings[5].n, oct: strings[5].o.slice(1),
+      showTab: this.props.showTab ?? true
+    };
+  }
+}
+</script>
+</body>
+</html>
