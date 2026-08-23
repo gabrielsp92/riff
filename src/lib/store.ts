@@ -404,6 +404,49 @@ reportPersistenceError = (message) => {
 };
 
 // ---------------------------------------------------------------------------
+// buildLineSegments (sheets-icd-v2.md §3.2) — pure rendering algorithm
+// turning a Line + a set of highlight ranges into renderable, chord-
+// anchored, highlight-aware text segments. Shared by the viewer's
+// `ChordLyricLine` and (optionally) the editor's live preview.
+// ---------------------------------------------------------------------------
+
+export interface LineSegment {
+  text: string;
+  charIndex: number; // start index of this segment within line.lyrics
+  chordId: string | null; // chord placed at this segment's start, or null
+  highlighted: boolean; // true if this segment falls inside any supplied highlight range
+}
+
+export function buildLineSegments(
+  line: Line,
+  highlightRanges: Array<[number, number]> // [start, end) pairs already filtered to this line
+): LineSegment[] {
+  const breakpoints = new Set<number>([0, line.lyrics.length]);
+  for (const placement of line.chordPlacements) breakpoints.add(placement.charIndex);
+  for (const [start, end] of highlightRanges) {
+    breakpoints.add(start);
+    breakpoints.add(end);
+  }
+  const sorted = Array.from(breakpoints).sort((a, b) => a - b);
+
+  const segments: LineSegment[] = [];
+  for (let i = 0; i < sorted.length - 1; i++) {
+    const start = sorted[i];
+    const end = sorted[i + 1];
+    if (start === end) continue; // skip zero-length pairs
+    const placement = line.chordPlacements.find((cp) => cp.charIndex === start);
+    const highlighted = highlightRanges.some(([rStart, rEnd]) => start >= rStart && start < rEnd);
+    segments.push({
+      text: line.lyrics.slice(start, end),
+      charIndex: start,
+      chordId: placement ? placement.chordId : null,
+      highlighted,
+    });
+  }
+  return segments;
+}
+
+// ---------------------------------------------------------------------------
 // Sheets tool sub-navigation (Epic 03, T3a) — sheets-icd.md §6.
 // There's no URL router inside a tool in this app; Sheets is the first tool
 // that needs internal sub-navigation (list → viewer → editor). Consistent

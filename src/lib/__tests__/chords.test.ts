@@ -4,7 +4,9 @@ import {
   lookupChordShape,
   resolveChordDisplay,
   transposeChordId,
+  uniqueChordIds,
 } from "@/lib/chords";
+import { Sheet } from "@/lib/store";
 
 // ---------------------------------------------------------------------------
 // T2a — lookupChordShape (sheets-icd.md §4.2)
@@ -184,5 +186,95 @@ describe("resolveChordDisplay — additional composition rules", () => {
         resolveChordDisplay(bad, { chordOverrides: [], capo: 0, transposeSemitones: 0 })
       ).not.toThrow();
     }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// T4b — uniqueChordIds (sheets-icd-v2.md §3.1)
+// ---------------------------------------------------------------------------
+
+describe("uniqueChordIds (ICD v2 §3.1)", () => {
+  const sheetDeadAir: Pick<Sheet, "sections"> = {
+    sections: [
+      {
+        id: "sec-verse-1",
+        label: "Verse 1",
+        lines: [
+          {
+            lyrics: "Headlights on the county line",
+            chordPlacements: [
+              { charIndex: 0, chordId: "E5" },
+              { charIndex: 18, chordId: "G5" },
+            ],
+          },
+          {
+            lyrics: "Amp hum keeping perfect time",
+            chordPlacements: [
+              { charIndex: 0, chordId: "A5" },
+              { charIndex: 16, chordId: "D5" },
+            ],
+          },
+        ],
+      },
+      {
+        id: "sec-chorus-1",
+        label: "Chorus",
+        lines: [
+          {
+            lyrics: "Dead air, dead air on the dial",
+            chordPlacements: [
+              { charIndex: 0, chordId: "D5" },
+              { charIndex: 26, chordId: "A5" },
+            ],
+          },
+          {
+            lyrics: "Nothing on for a hundred mile",
+            chordPlacements: [
+              { charIndex: 0, chordId: "E5" },
+              { charIndex: 17, chordId: "G5" },
+            ],
+          },
+        ],
+      },
+    ],
+  };
+
+  it("worked example — DEAD AIR ON THE HIGHWAY seed sheet", () => {
+    expect(uniqueChordIds(sheetDeadAir)).toEqual(["E5", "G5", "A5", "D5"]);
+  });
+
+  it("returns [] for a sheet with no sections", () => {
+    expect(uniqueChordIds({ sections: [] })).toEqual([]);
+  });
+
+  it("returns [] for sections whose lines have no chord placements", () => {
+    expect(
+      uniqueChordIds({
+        sections: [{ id: "s1", label: "Verse", lines: [{ lyrics: "no chords here", chordPlacements: [] }] }],
+      })
+    ).toEqual([]);
+  });
+
+  it("dedupes a chord id reappearing later without reordering it", () => {
+    expect(
+      uniqueChordIds({
+        sections: [
+          {
+            id: "s1",
+            label: "Verse",
+            lines: [
+              {
+                lyrics: "ab",
+                chordPlacements: [
+                  { charIndex: 0, chordId: "E5" },
+                  { charIndex: 1, chordId: "A5" },
+                ],
+              },
+              { lyrics: "cd", chordPlacements: [{ charIndex: 0, chordId: "E5" }] },
+            ],
+          },
+        ],
+      })
+    ).toEqual(["E5", "A5"]);
   });
 });

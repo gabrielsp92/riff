@@ -61,6 +61,34 @@ export function lookupChordShape(chordId: string): ChordShape {
 }
 
 // ---------------------------------------------------------------------------
+// sheets-icd-v2.md §3.1 — uniqueChordIds
+// ---------------------------------------------------------------------------
+
+/**
+ * Walks `sheet.sections` in order, then each section's `lines` in order,
+ * then each line's `chordPlacements` in order (already stored sorted
+ * ascending by `charIndex`), collecting each distinct `chordId` the first
+ * time it's seen. Returns them in first-appearance order — no further
+ * sorting — since this feeds the viewer's chord-chip row and the editor's
+ * override-chord-list directly.
+ */
+export function uniqueChordIds(sheet: Pick<Sheet, "sections">): string[] {
+  const seen = new Set<string>();
+  const result: string[] = [];
+  for (const section of sheet.sections) {
+    for (const line of section.lines) {
+      for (const placement of line.chordPlacements) {
+        if (!seen.has(placement.chordId)) {
+          seen.add(placement.chordId);
+          result.push(placement.chordId);
+        }
+      }
+    }
+  }
+  return result;
+}
+
+// ---------------------------------------------------------------------------
 // §4.6 — transposeChordId (+ shared note-name parsing/respelling)
 // ---------------------------------------------------------------------------
 
