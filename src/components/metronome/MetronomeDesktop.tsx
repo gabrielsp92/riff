@@ -1,6 +1,6 @@
 "use client";
 
-import { ClickSound, SETLIST, useTransportStore } from "@/lib/store";
+import { ClickSound, useSetlistStore, useTransportStore } from "@/lib/store";
 import { tempoMarking } from "@/lib/tempo";
 
 const SUBDIVISION_LABEL: Record<string, string> = {
@@ -31,6 +31,7 @@ export function MetronomeDesktop() {
   const setClickSound = useTransportStore((s) => s.setClickSound);
   const toggleTrainer = useTransportStore((s) => s.toggleTrainer);
   const setBpm = useTransportStore((s) => s.setBpm);
+  const songs = useSetlistStore((s) => s.songs);
 
   const trainerProgress = Math.round(
     Math.max(0, Math.min(1, (bpm - trainer.from) / (trainer.to - trainer.from))) * 100
@@ -117,9 +118,9 @@ export function MetronomeDesktop() {
         <div className="border-b-2 border-ink px-[18px] py-[14px] font-mono-rf text-[10px] tracking-[.14em] text-neutral-700">
           SETLIST TEMPOS
         </div>
-        {SETLIST.map((s) => (
+        {songs.map((s) => (
           <button
-            key={s.title}
+            key={s.id}
             onClick={() => setBpm(s.bpm)}
             className="flex items-baseline justify-between border-b-2 border-divider px-[18px] py-[14px] text-left"
           >

@@ -4,6 +4,7 @@ import { ToolId, TOOLS } from "@/lib/tools";
 import { useTransportStore, useTunerStore } from "@/lib/store";
 import { TunerDesktop } from "../tuner/TunerDesktop";
 import { MetronomeDesktop } from "../metronome/MetronomeDesktop";
+import { SheetsDesktop } from "../sheets/SheetsDesktop";
 import { Placeholder } from "./Placeholder";
 
 export function DesktopShell({
@@ -73,7 +74,8 @@ export function DesktopShell({
 
         {tool === "tuner" && <TunerDesktop />}
         {tool === "metronome" && <MetronomeDesktop />}
-        {tool !== "tuner" && tool !== "metronome" && (
+        {tool === "sheets" && <SheetsDesktop />}
+        {tool !== "tuner" && tool !== "metronome" && tool !== "sheets" && (
           <>
             <Placeholder label={active.desktopLabel} />
             <div className="border-l-2 border-ink" />
