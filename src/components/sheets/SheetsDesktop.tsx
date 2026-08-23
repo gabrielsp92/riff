@@ -3,12 +3,16 @@
 import { useSheetsNavStore } from "@/lib/store";
 import { Placeholder } from "../shell/Placeholder";
 import { SheetsList } from "./SheetsList";
+import { SheetViewerDesktop } from "./SheetViewerDesktop";
 
 // Sheets tool, desktop layout. Renders as the two right-hand columns of
 // DesktopShell's [196px_1fr_400px] grid (rail is rendered by DesktopShell
 // itself). Reads useSheetsNavStore().screen (sheets-icd.md §6): "list"
-// renders SheetsList in the main pane; "viewer"/"editor" render the existing
-// Placeholder plus a "← SHEETS" back control (those screens are Epic 04/05).
+// renders SheetsList in the main pane; "viewer" renders SheetViewerDesktop
+// (Epic 04, which supplies its own two-column main pane + right panel); the
+// still-unbuilt "editor" (Epic 05) keeps the Placeholder. A single "←
+// SHEETS" back control lives here, above the viewer's main pane, so there's
+// never a duplicate.
 export function SheetsDesktop() {
   const screen = useSheetsNavStore((s) => s.screen);
   const openList = useSheetsNavStore((s) => s.openList);
@@ -22,7 +26,9 @@ export function SheetsDesktop() {
     );
   }
 
-  const label = screen.name === "viewer" ? "SHEET VIEWER" : "NEW SHEET";
+  if (screen.name === "viewer") {
+    return <SheetViewerDesktop sheetId={screen.sheetId} />;
+  }
 
   return (
     <>
@@ -33,7 +39,7 @@ export function SheetsDesktop() {
         >
           ← SHEETS
         </button>
-        <Placeholder label={label} />
+        <Placeholder label="NEW SHEET" />
       </div>
       <div className="border-l-2 border-ink" />
     </>
