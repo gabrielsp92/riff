@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransportStore, SETLIST } from "@/lib/store";
+import { useTransportStore, useSetlistStore } from "@/lib/store";
 import { tempoMarking } from "@/lib/tempo";
 
 const SUBDIVISION_LABEL: Record<string, string> = {
@@ -24,6 +24,7 @@ export function MetronomeMobile() {
   const cycleAccent = useTransportStore((s) => s.cycleAccent);
   const toggleTrainer = useTransportStore((s) => s.toggleTrainer);
   const setBpm = useTransportStore((s) => s.setBpm);
+  const songs = useSetlistStore((s) => s.songs);
 
   const trainerProgress = Math.round(
     Math.max(0, Math.min(1, (bpm - trainer.from) / (trainer.to - trainer.from))) * 100
@@ -105,9 +106,9 @@ export function MetronomeMobile() {
       <div className="min-h-0 flex-1 px-[18px] py-[14px]">
         <div className="mb-2 font-mono-rf text-[10px] tracking-[.12em] text-neutral-700">SETLIST TEMPOS</div>
         <div className="flex flex-col">
-          {SETLIST.map((s) => (
+          {songs.map((s) => (
             <button
-              key={s.title}
+              key={s.id}
               onClick={() => setBpm(s.bpm)}
               className="flex items-baseline justify-between border-b-2 border-divider py-2 text-left font-sans text-[11px] font-extrabold tracking-[.02em]"
             >

@@ -3,6 +3,7 @@
 import { ToolId, TOOLS } from "@/lib/tools";
 import { TunerMobile } from "../tuner/TunerMobile";
 import { MetronomeMobile } from "../metronome/MetronomeMobile";
+import { SheetsMobile } from "../sheets/SheetsMobile";
 import { Placeholder } from "./Placeholder";
 
 export function MobileShell({
@@ -30,7 +31,10 @@ export function MobileShell({
       <main className="flex min-h-0 flex-1 flex-col">
         {tool === "tuner" && <TunerMobile />}
         {tool === "metronome" && <MetronomeMobile />}
-        {tool !== "tuner" && tool !== "metronome" && <Placeholder label={active.desktopLabel} />}
+        {tool === "sheets" && <SheetsMobile />}
+        {tool !== "tuner" && tool !== "metronome" && tool !== "sheets" && (
+          <Placeholder label={active.desktopLabel} />
+        )}
       </main>
 
       <nav className="grid grid-cols-5 border-t-2 border-ink">
