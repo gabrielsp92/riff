@@ -1,6 +1,5 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { webcrypto } from "node:crypto";
-import { useSheetsStore } from "@/lib/store";
 
 // Vitest's default "node" pool doesn't expose the WebCrypto global the way a
 // plain Node process or a browser does; polyfill it here (test-only) so
@@ -11,9 +10,32 @@ if (typeof globalThis.crypto === "undefined" || typeof globalThis.crypto.randomU
   (globalThis as any).crypto = webcrypto;
 }
 
-// Snapshot of the store's true initial state (seed data + actions) so each
-// test can reset to a known baseline without re-importing the module.
-const initialState = useSheetsStore.getState();
+// `useSheetsStore` is now wired to IndexedDB via zustand's `persist`
+// middleware (T1b). Vitest's "node" environment has no real `indexedDB`
+// global, so mock `idb-keyval` (the persistence adapter's only dependency)
+// to simulate a healthy, empty store — CRUD tests below care about the
+// store's synchronous behavior, not persistence itself (that's covered by
+// sheetsPersistence.test.ts and the dedicated hydration tests below).
+vi.mock("idb-keyval", () => ({
+  get: vi.fn().mockResolvedValue(undefined),
+  set: vi.fn().mockResolvedValue(undefined),
+  del: vi.fn().mockResolvedValue(undefined),
+}));
+
+import { get as idbGet, set as idbSet } from "idb-keyval";
+import { useSheetsStore } from "@/lib/store";
+
+const mockedIdbGet = vi.mocked(idbGet);
+const mockedIdbSet = vi.mocked(idbSet);
+
+// Snapshot of the store's true, pristine initial state (seed data + actions,
+// `hydrated: false`, `persistenceError: null`) so each test can reset to a
+// known baseline without re-importing the module. `getInitialState()` always
+// returns this same pristine object regardless of any hydration that may
+// have run in the meantime (see zustand's persist middleware — it never
+// mutates `configResult`), so this reset is deterministic even though
+// hydration itself is asynchronous.
+const initialState = useSheetsStore.getInitialState();
 
 beforeEach(() => {
   useSheetsStore.setState(initialState, true);
@@ -24,9 +46,9 @@ describe("useSheetsStore seed data", () => {
     expect(useSheetsStore.getState().sheets).toHaveLength(5);
   });
 
-  it("is hydrated with no persistence error at this step (no persistence yet)", () => {
+  it("starts unhydrated, with no persistence error, before rehydration completes", () => {
     const s = useSheetsStore.getState();
-    expect(s.hydrated).toBe(true);
+    expect(s.hydrated).toBe(false);
     expect(s.persistenceError).toBeNull();
   });
 
@@ -225,5 +247,65 @@ describe("useSheetsStore.removeSheet", () => {
 describe("useSheetsStore.getSheet", () => {
   it("returns undefined for an unknown id", () => {
     expect(useSheetsStore.getState().getSheet("nope")).toBeUndefined();
+  });
+});
+
+describe("useSheetsStore hydration & persistence (T1b)", () => {
+  it("becomes hydrated with no persistence error once rehydration completes against a healthy, empty store", async () => {
+    mockedIdbGet.mockResolvedValue(undefined);
+    await useSheetsStore.persist.rehydrate();
+    const s = useSheetsStore.getState();
+    expect(s.hydrated).toBe(true);
+    expect(s.persistenceError).toBeNull();
+    // No persisted value existed — falls back to (still-present) seed data.
+    expect(s.sheets).toHaveLength(5);
+  });
+
+  it("hydrates `sheets` from a well-formed persisted value", async () => {
+    const persistedSheet = useSheetsStore.getState().sheets[0];
+    mockedIdbGet.mockResolvedValue({
+      state: { sheets: [persistedSheet] },
+      version: 0,
+    });
+    await useSheetsStore.persist.rehydrate();
+    const s = useSheetsStore.getState();
+    expect(s.hydrated).toBe(true);
+    expect(s.persistenceError).toBeNull();
+    expect(s.sheets).toEqual([persistedSheet]);
+  });
+
+  it("falls back to seed data (console.warn, no persistenceError) when persisted data is corrupt", async () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    mockedIdbGet.mockResolvedValue({ state: { sheets: "not-an-array" }, version: 0 });
+    await useSheetsStore.persist.rehydrate();
+    const s = useSheetsStore.getState();
+    expect(s.hydrated).toBe(true);
+    expect(s.persistenceError).toBeNull();
+    expect(s.sheets).toHaveLength(5);
+    expect(warnSpy).toHaveBeenCalled();
+    warnSpy.mockRestore();
+  });
+
+  it("sets persistenceError (but still becomes hydrated, falling back to seed data) when the storage read fails", async () => {
+    mockedIdbGet.mockRejectedValue(new Error("IndexedDB disabled"));
+    await useSheetsStore.persist.rehydrate();
+    const s = useSheetsStore.getState();
+    expect(s.hydrated).toBe(true);
+    expect(s.persistenceError).toEqual(expect.stringContaining("Storage unavailable"));
+    expect(s.sheets).toHaveLength(5);
+  });
+
+  it("does not recurse/hang when both reads and writes fail (regression: reporting a persistenceError writes state, which persist itself tries to save, which can fail again)", async () => {
+    mockedIdbGet.mockRejectedValue(new Error("IndexedDB disabled"));
+    mockedIdbSet.mockRejectedValue(new Error("IndexedDB disabled"));
+    mockedIdbSet.mockClear();
+    await useSheetsStore.persist.rehydrate();
+    const s = useSheetsStore.getState();
+    expect(s.hydrated).toBe(true);
+    expect(s.persistenceError).toEqual(expect.stringContaining("Storage unavailable"));
+    // Every genuinely new state change (the error report, then `hydrated:
+    // true`) triggers one persist write attempt each; a re-entrancy bug
+    // would call `set` unboundedly instead of a small, fixed number of times.
+    expect(mockedIdbSet.mock.calls.length).toBeLessThan(5);
   });
 });

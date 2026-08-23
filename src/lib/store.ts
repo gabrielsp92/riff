@@ -1,5 +1,7 @@
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 import { TuningName } from "./music";
+import { createSheetsIndexedDbStorage } from "./sheetsPersistence";
 
 export type Permission = "idle" | "requesting" | "granted" | "denied";
 
@@ -147,8 +149,8 @@ export interface Sheet {
 
 interface SheetsState {
   sheets: Sheet[];
-  hydrated: boolean; // false until the persisted store has finished loading (or determined there's nothing to load) — always true at this step, no persistence yet (T1b)
-  persistenceError: string | null; // non-null if the storage backend failed to read/write — always null at this step (T1b)
+  hydrated: boolean; // false until the persisted store has finished loading (or determined there's nothing to load)
+  persistenceError: string | null; // non-null if the storage backend failed to read/write (sheets-icd.md §3.4); null for corrupt-data fallback (§3.2), which only logs a console.warn
 
   addSheet: (input: NewSheetInput) => string; // returns the new Sheet's id
   updateSheet: (id: string, patch: Partial<Omit<Sheet, "id" | "createdAt">>) => void; // no-op + no error if id not found (personal-app tolerance, mirrors useSetlistStore.updateSong)
@@ -294,54 +296,93 @@ const SEED_SHEETS: Sheet[] = [
   metadataOnlySeed("sheet-seed-5", "BASEMENT TAPE", "C", 128),
 ];
 
-// In-memory for the session only — IndexedDB persistence via zustand's
-// `persist` middleware lands in T1b (see sheets-icd.md §3.2). `hydrated`
-// and `persistenceError` are wired to their real values then; today
-// `hydrated` is always true (nothing to wait on) and `persistenceError`
-// is always null (nothing can fail to read/write yet).
-export const useSheetsStore = create<SheetsState>((set, get) => ({
-  sheets: SEED_SHEETS,
-  hydrated: true,
-  persistenceError: null,
-  addSheet: (input) => {
-    const id = crypto.randomUUID();
-    const now = new Date().toISOString();
-    const sheet: Sheet = {
-      id,
-      title: input.title.trim(),
-      key: input.key,
-      bpm: clampBpm(input.bpm),
-      timeSignature: clampTimeSignature(input.timeSignature),
-      capo: clampCapo(input.capo ?? 0),
-      transposeSemitones: clampTranspose(input.transposeSemitones ?? 0),
-      sections: clampSections(input.sections ?? []),
-      chordOverrides: input.chordOverrides ?? [],
-      annotations: input.annotations ?? [],
-      createdAt: now,
-      updatedAt: now,
-    };
-    set((s) => ({ sheets: [...s.sheets, sheet] }));
-    return id;
-  },
-  updateSheet: (id, patch) =>
-    set((s) => ({
-      sheets: s.sheets.map((sheet) => {
-        if (sheet.id !== id) return sheet;
-        const next: Sheet = { ...sheet, ...patch };
-        if (patch.title !== undefined) next.title = patch.title.trim();
-        if (patch.bpm !== undefined) next.bpm = clampBpm(patch.bpm);
-        if (patch.timeSignature !== undefined) next.timeSignature = clampTimeSignature(patch.timeSignature);
-        if (patch.capo !== undefined) next.capo = clampCapo(patch.capo);
-        if (patch.transposeSemitones !== undefined) next.transposeSemitones = clampTranspose(patch.transposeSemitones);
-        if (patch.sections !== undefined) next.sections = clampSections(patch.sections);
-        next.updatedAt = new Date().toISOString();
-        return next;
-      }),
-    })),
-  removeSheet: (id) =>
-    set((s) => ({ sheets: s.sheets.filter((sheet) => sheet.id !== id) })),
-  getSheet: (id) => get().sheets.find((sheet) => sheet.id === id),
-}));
+// Reports storage-backend read/write failures (IndexedDB unavailable, quota
+// exceeded, disabled storage, etc. — sheets-icd.md §3.4) into the store's
+// `persistenceError` field. Assigned once `useSheetsStore` exists below;
+// the storage adapter is only ever invoked asynchronously (on rehydration
+// or a later persist write), well after module evaluation finishes, so this
+// forward reference is safe.
+let reportPersistenceError: (message: string) => void = () => {};
+
+// IndexedDB persistence via zustand's `persist` middleware (sheets-icd.md
+// §3.2). Only `sheets` is persisted (`partialize`); `hydrated` and
+// `persistenceError` are runtime-only and never written to storage.
+// `hydrated` starts `false` and flips to `true` once rehydration completes,
+// whether or not a persisted value existed (a fresh install still counts as
+// "hydrated" — it just hydrates to the seed data).
+export const useSheetsStore = create<SheetsState>()(
+  persist(
+    (set, get) => ({
+      sheets: SEED_SHEETS,
+      hydrated: false,
+      persistenceError: null,
+      addSheet: (input) => {
+        const id = crypto.randomUUID();
+        const now = new Date().toISOString();
+        const sheet: Sheet = {
+          id,
+          title: input.title.trim(),
+          key: input.key,
+          bpm: clampBpm(input.bpm),
+          timeSignature: clampTimeSignature(input.timeSignature),
+          capo: clampCapo(input.capo ?? 0),
+          transposeSemitones: clampTranspose(input.transposeSemitones ?? 0),
+          sections: clampSections(input.sections ?? []),
+          chordOverrides: input.chordOverrides ?? [],
+          annotations: input.annotations ?? [],
+          createdAt: now,
+          updatedAt: now,
+        };
+        set((s) => ({ sheets: [...s.sheets, sheet] }));
+        return id;
+      },
+      updateSheet: (id, patch) =>
+        set((s) => ({
+          sheets: s.sheets.map((sheet) => {
+            if (sheet.id !== id) return sheet;
+            const next: Sheet = { ...sheet, ...patch };
+            if (patch.title !== undefined) next.title = patch.title.trim();
+            if (patch.bpm !== undefined) next.bpm = clampBpm(patch.bpm);
+            if (patch.timeSignature !== undefined) next.timeSignature = clampTimeSignature(patch.timeSignature);
+            if (patch.capo !== undefined) next.capo = clampCapo(patch.capo);
+            if (patch.transposeSemitones !== undefined) next.transposeSemitones = clampTranspose(patch.transposeSemitones);
+            if (patch.sections !== undefined) next.sections = clampSections(patch.sections);
+            next.updatedAt = new Date().toISOString();
+            return next;
+          }),
+        })),
+      removeSheet: (id) =>
+        set((s) => ({ sheets: s.sheets.filter((sheet) => sheet.id !== id) })),
+      getSheet: (id) => get().sheets.find((sheet) => sheet.id === id),
+    }),
+    {
+      name: "riff-sheets-v1",
+      storage: createSheetsIndexedDbStorage((message) =>
+        reportPersistenceError(message)
+      ),
+      partialize: (state) => ({ sheets: state.sheets }),
+      onRehydrateStorage: () => () => {
+        // Called once rehydration settles, whether or not a persisted value
+        // existed or an error occurred along the way (the storage adapter
+        // itself never rejects — it catches its own errors and reports them
+        // via `reportPersistenceError`) — sheets-icd.md §3.2.
+        useSheetsStore.setState({ hydrated: true });
+      },
+    }
+  )
+);
+
+reportPersistenceError = (message) => {
+  // Guard against re-entrancy: `setState` here goes through `persist`'s
+  // wrapped `api.setState`, which always fires another storage write after
+  // every state change (including this one) — if storage is genuinely down,
+  // that write will fail too and loop back into this same function. Since
+  // the message is already reflected in state after the first call, treat a
+  // repeat of the same message as a no-op instead of writing (and thus
+  // persist-writing, and thus potentially re-erroring) again.
+  if (useSheetsStore.getState().persistenceError === message) return;
+  useSheetsStore.setState({ persistenceError: message });
+};
 
 interface TransportState {
   bpm: number;
