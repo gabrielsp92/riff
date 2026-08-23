@@ -31,6 +31,7 @@ export function useTunerDisplay() {
     tuning,
     setTuning,
     strings,
+    a4,
     detected,
     micLevel,
     bars,

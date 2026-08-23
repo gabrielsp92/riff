@@ -1,7 +1,8 @@
 "use client";
 
 import { useTuner } from "@/hooks/useTuner";
-import { TUNING_NAMES, TuningName } from "@/lib/music";
+import { TUNING_NAMES, TuningName, stringFreq } from "@/lib/music";
+import { playReferenceTone } from "@/lib/referenceTone";
 import { useTunerDisplay } from "./useTunerDisplay";
 import { MicGate } from "./MicGate";
 
@@ -11,6 +12,7 @@ export function TunerMobile() {
     tuning,
     setTuning,
     strings,
+    a4,
     detected,
     bars,
     permission,
@@ -75,9 +77,12 @@ export function TunerMobile() {
         {strings.map((s, i) => {
           const active = i === activeStringIndex;
           return (
-            <div
+            <button
               key={i}
-              className={`border-r-2 border-ink py-3 pl-2 ${active ? "bg-accent text-white" : ""}`}
+              onClick={() => playReferenceTone(stringFreq(s, a4))}
+              className={`border-r-2 border-ink py-3 pl-2 text-left ${
+                active ? "bg-accent text-white" : "hover:bg-accent-100 active:bg-accent-200"
+              }`}
             >
               <div className="font-sans text-[20px] font-extrabold leading-none">{s.note}</div>
               <div
@@ -86,7 +91,7 @@ export function TunerMobile() {
                 {s.note}
                 {s.octave}
               </div>
-            </div>
+            </button>
           );
         })}
       </div>
