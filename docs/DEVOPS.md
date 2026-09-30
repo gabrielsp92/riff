@@ -9,14 +9,13 @@ the build, then deploy to Vercel automatically.
 Runs on every push and pull request targeting `main`:
 
 1. **Lint & build** — `npm ci`, `npm run lint`, `npm test`, `npm run build`.
-2. **Deploy preview** (PRs only) — once job 1 passes, deploys a Vercel
-   preview and upserts a PR comment with its URL. Skipped for PRs from
-   forks, which have no access to the Vercel secrets.
-3. **Deploy production** (pushes to `main` only) — once job 1 passes,
+2. **Deploy production** (pushes to `main` only, i.e. merged PRs) — once
+   job 1 passes,
    deploys to Vercel production. Production deploys are serialized, never
    cancelled mid-flight.
 
-A red CI run never deploys.
+Pull requests only run the checks; nothing is deployed until the PR is
+merged. A red CI run never deploys.
 
 ## Tests — Vitest
 
@@ -33,7 +32,7 @@ npm test
 
 ## Deploy — `.github/workflows/deploy.yml`
 
-Reusable workflow that ci.yml calls for both preview and production. It uses
+Reusable workflow that ci.yml calls for production deploys. It uses
 the Vercel CLI: `vercel pull` → `vercel build` → `vercel deploy --prebuilt`.
 It can also be dispatched by hand (Actions tab → **Deploy (Vercel)** → **Run
 workflow**) to redeploy any branch to `production` or `preview`.

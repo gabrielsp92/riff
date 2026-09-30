@@ -32,47 +32,8 @@ jobs:
       - name: Build
         run: npm run build
 
-  # Preview deploy for every PR opened from this repo. Fork PRs are skipped:
-  # they don't get access to the Vercel secrets.
-  deploy-preview:
-    name: Deploy preview
-    needs: lint-and-build
-    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
-    concurrency:
-      group: preview-${{ github.event.pull_request.number }}
-      cancel-in-progress: true
-    uses: ./.github/workflows/deploy.yml
-    with:
-      environment: preview
-    secrets: inherit
-
-  comment-preview:
-    name: Comment preview URL
-    needs: deploy-preview
-    runs-on: ubuntu-latest
-    permissions:
-      pull-requests: write
-    steps:
-      - name: Upsert PR comment
-        env:
-          GH_TOKEN: ${{ github.token }}
-          URL: ${{ needs.deploy-preview.outputs.url }}
-          PR: ${{ github.event.pull_request.number }}
-          SHA: ${{ github.event.pull_request.head.sha }}
-        run: |
-          marker="<!-- vercel-preview -->"
-          body="$marker
-          **Vercel preview:** $URL
-          <sub>Commit ${SHA:0:7}</sub>"
-          id=$(gh api "repos/$GITHUB_REPOSITORY/issues/$PR/comments" --paginate \
-            --jq ".[] | select(.body | startswith(\"$marker\")) | .id" | head -n1)
-          if [ -n "$id" ]; then
-            gh api -X PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$id" -f body="$body" > /dev/null
-          else
-            gh api "repos/$GITHUB_REPOSITORY/issues/$PR/comments" -f body="$body" > /dev/null
-          fi
-
-  # Production deploy on every push to main, only after CI passes.
+  # Production deploy when a PR is merged (push to main), only after CI passes.
+  # PRs themselves never deploy.
   deploy-production:
     name: Deploy production
     needs: lint-and-build
