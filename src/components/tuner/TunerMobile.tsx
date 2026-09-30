@@ -1,16 +1,22 @@
 "use client";
 
 import { useTuner } from "@/hooks/useTuner";
-import { TUNING_NAMES, TuningName, stringFreq } from "@/lib/music";
+import { TUNINGS, TUNING_NAMES, stringFreq, transposeTuning } from "@/lib/music";
 import { playReferenceTone } from "@/lib/referenceTone";
 import { useTunerDisplay } from "./useTunerDisplay";
 import { MicGate } from "./MicGate";
+import { TransposeControl } from "./TransposeControl";
 
 export function TunerMobile() {
   const { requestMic } = useTuner();
   const {
     tuning,
     setTuning,
+    semitoneShift,
+    shiftSemitones,
+    resetSemitoneShift,
+    shiftLabel,
+    tuningLabel,
     strings,
     a4,
     detected,
@@ -22,12 +28,17 @@ export function TunerMobile() {
     ticks,
   } = useTunerDisplay();
 
+  const spell = (name: (typeof TUNING_NAMES)[number]) =>
+    transposeTuning(TUNINGS[name], semitoneShift)
+      .map((s) => s.note)
+      .join(" ");
+
   const stringNumber = activeStringIndex !== null ? 6 - activeStringIndex : 6;
 
   return (
     <div className="flex flex-1 flex-col min-h-0">
       <div className="px-[18px] pt-4 font-mono-rf text-[10px] font-bold tracking-[.14em] text-neutral-700">
-        {tuning.toUpperCase()} · A4 = 440 HZ · STRING {stringNumber}
+        {tuningLabel} · A4 = 440 HZ · STRING {stringNumber}
       </div>
 
       {permission !== "granted" ? (
@@ -112,8 +123,19 @@ export function TunerMobile() {
       </div>
 
       <div className="min-h-0 flex-1 border-t-2 border-divider px-[18px] pb-3 pt-3">
-        <div className="mb-2 font-mono-rf text-[10px] font-bold tracking-[.14em] text-neutral-700">
-          TUNINGS
+        <div className="mb-2 flex items-center justify-between gap-3">
+          <span className="font-mono-rf text-[10px] font-bold tracking-[.14em] text-neutral-700">
+            TUNINGS
+          </span>
+          <div className="w-[160px]">
+            <TransposeControl
+              semitoneShift={semitoneShift}
+              shiftLabel={shiftLabel}
+              onShift={shiftSemitones}
+              onReset={resetSemitoneShift}
+              compact
+            />
+          </div>
         </div>
         <div className="flex flex-col gap-[2px]">
           {TUNING_NAMES.map((name) => {
@@ -132,7 +154,7 @@ export function TunerMobile() {
                     selected ? "text-white" : "text-neutral-700"
                   }`}
                 >
-                  {SPELLING[name]}
+                  {spell(name)}
                 </span>
               </button>
             );
@@ -143,8 +165,3 @@ export function TunerMobile() {
   );
 }
 
-const SPELLING: Record<TuningName, string> = {
-  "Standard E": "E A D G B E",
-  "Drop D": "D A D G B E",
-  "Open G": "D G D G B D",
-};

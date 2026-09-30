@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { TuningName } from "./music";
+import { MAX_SEMITONE_SHIFT, TuningName } from "./music";
 import { createSheetsIndexedDbStorage } from "./sheetsPersistence";
 import { ToolId } from "./tools";
 
@@ -33,12 +33,15 @@ export interface DetectedPitch {
 
 interface TunerState {
   tuning: TuningName;
+  semitoneShift: number; // whole-tuning transpose, applied on top of `tuning`
   a4: number;
   permission: Permission;
   detected: DetectedPitch | null;
   micLevel: number; // 0..1
   bars: number[]; // 0..1 per bar, live waveform meter
   setTuning: (t: TuningName) => void;
+  shiftSemitones: (delta: number) => void;
+  resetSemitoneShift: () => void;
   setPermission: (p: Permission) => void;
   setDetected: (d: DetectedPitch | null) => void;
   setMeter: (level: number, bars: number[]) => void;
@@ -46,12 +49,21 @@ interface TunerState {
 
 export const useTunerStore = create<TunerState>((set) => ({
   tuning: "Standard E",
+  semitoneShift: 0,
   a4: 440,
   permission: "idle",
   detected: null,
   micLevel: 0,
   bars: new Array(28).fill(0),
   setTuning: (tuning) => set({ tuning }),
+  shiftSemitones: (delta) =>
+    set((st) => ({
+      semitoneShift: Math.max(
+        -MAX_SEMITONE_SHIFT,
+        Math.min(MAX_SEMITONE_SHIFT, st.semitoneShift + delta)
+      ),
+    })),
+  resetSemitoneShift: () => set({ semitoneShift: 0 }),
   setPermission: (permission) => set({ permission }),
   setDetected: (detected) => set({ detected }),
   setMeter: (micLevel, bars) => set({ micLevel, bars }),

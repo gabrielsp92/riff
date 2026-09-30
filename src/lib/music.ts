@@ -55,6 +55,25 @@ export function stringFreq(s: StringSpec, a4 = 440): number {
   return midiToFreq(noteToMidi(s.note, s.octave), a4);
 }
 
+export const MAX_SEMITONE_SHIFT = 12;
+
+/** Moves one string up (+) or down (-) by whole semitones, carrying the octave. */
+export function transposeString(s: StringSpec, semitones: number): StringSpec {
+  const midi = noteToMidi(s.note, s.octave) + semitones;
+  return { note: NOTE_NAMES[((midi % 12) + 12) % 12], octave: Math.floor(midi / 12) - 1 };
+}
+
+/** Shifts every string of a tuning by the same number of semitones. */
+export function transposeTuning(tuning: StringSpec[], semitones: number): StringSpec[] {
+  return semitones === 0 ? tuning : tuning.map((s) => transposeString(s, semitones));
+}
+
+/** "+1 ST", "−2 ST", or "" when there is no shift. */
+export function formatSemitoneShift(semitones: number): string {
+  if (semitones === 0) return "";
+  return `${semitones > 0 ? "+" : "−"}${Math.abs(semitones)} ST`;
+}
+
 export interface DetectedNote {
   name: NoteName;
   octave: number;
