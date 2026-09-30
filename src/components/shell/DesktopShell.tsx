@@ -2,6 +2,7 @@
 
 import { ToolId, TOOLS } from "@/lib/tools";
 import { useTransportStore, useTunerStore } from "@/lib/store";
+import { formatSemitoneShift } from "@/lib/music";
 import { TunerDesktop } from "../tuner/TunerDesktop";
 import { MetronomeDesktop } from "../metronome/MetronomeDesktop";
 import { SheetsDesktop } from "../sheets/SheetsDesktop";
@@ -17,10 +18,11 @@ export function DesktopShell({
   const active = TOOLS.find((t) => t.id === tool)!;
   const bpm = useTransportStore((s) => s.bpm);
   const tuning = useTunerStore((s) => s.tuning);
+  const shiftLabel = formatSemitoneShift(useTunerStore((s) => s.semitoneShift));
 
   const sessionLabel =
     tool === "tuner"
-      ? `SESSION: ${tuning.toUpperCase()}`
+      ? `SESSION: ${tuning.toUpperCase()}${shiftLabel ? ` ${shiftLabel}` : ""}`
       : tool === "metronome"
       ? `SESSION: ${bpm} BPM`
       : "SESSION: RIFF";

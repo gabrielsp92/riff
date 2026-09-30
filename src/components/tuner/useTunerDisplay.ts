@@ -1,18 +1,30 @@
 "use client";
 
 import { useTunerStore } from "@/lib/store";
-import { TUNINGS, midiToFreq, nearestStringIndex } from "@/lib/music";
+import {
+  TUNINGS,
+  formatSemitoneShift,
+  midiToFreq,
+  nearestStringIndex,
+  transposeTuning,
+} from "@/lib/music";
 
 export function useTunerDisplay() {
   const tuning = useTunerStore((s) => s.tuning);
   const setTuning = useTunerStore((s) => s.setTuning);
+  const semitoneShift = useTunerStore((s) => s.semitoneShift);
+  const shiftSemitones = useTunerStore((s) => s.shiftSemitones);
+  const resetSemitoneShift = useTunerStore((s) => s.resetSemitoneShift);
   const a4 = useTunerStore((s) => s.a4);
   const detected = useTunerStore((s) => s.detected);
   const micLevel = useTunerStore((s) => s.micLevel);
   const bars = useTunerStore((s) => s.bars);
   const permission = useTunerStore((s) => s.permission);
 
-  const strings = TUNINGS[tuning];
+  const strings = transposeTuning(TUNINGS[tuning], semitoneShift);
+  const shiftLabel = formatSemitoneShift(semitoneShift);
+  // e.g. "STANDARD E −1 ST" — used in headers so the shift is always visible.
+  const tuningLabel = `${tuning.toUpperCase()}${shiftLabel ? ` ${shiftLabel}` : ""}`;
   const cents = detected?.cents ?? 0;
   const clampedCents = Math.max(-50, Math.min(50, cents));
   const percent = ((clampedCents + 50) / 100) * 100;
@@ -30,6 +42,11 @@ export function useTunerDisplay() {
   return {
     tuning,
     setTuning,
+    semitoneShift,
+    shiftSemitones,
+    resetSemitoneShift,
+    shiftLabel,
+    tuningLabel,
     strings,
     a4,
     detected,

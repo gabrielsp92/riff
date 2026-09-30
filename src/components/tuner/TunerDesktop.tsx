@@ -2,22 +2,23 @@
 
 import { useTuner } from "@/hooks/useTuner";
 import { useTransportStore } from "@/lib/store";
-import { TUNING_NAMES, TuningName, stringFreq } from "@/lib/music";
+import { TUNINGS, TUNING_NAMES, stringFreq, transposeTuning } from "@/lib/music";
 import { playReferenceTone } from "@/lib/referenceTone";
 import { useTunerDisplay } from "./useTunerDisplay";
 import { MicGate } from "./MicGate";
+import { TransposeControl } from "./TransposeControl";
 
-const SPELLING: Record<TuningName, string> = {
-  "Standard E": "E A D G B E",
-  "Drop D": "D A D G B E",
-  "Open G": "D G D G B D",
-};
 
 export function TunerDesktop() {
   const { requestMic } = useTuner();
   const {
     tuning,
     setTuning,
+    semitoneShift,
+    shiftSemitones,
+    resetSemitoneShift,
+    shiftLabel,
+    tuningLabel,
     strings,
     a4,
     detected,
@@ -29,6 +30,11 @@ export function TunerDesktop() {
     ticks,
   } = useTunerDisplay();
 
+  const spell = (name: (typeof TUNING_NAMES)[number]) =>
+    transposeTuning(TUNINGS[name], semitoneShift)
+      .map((s) => s.note)
+      .join(" ");
+
   const bpm = useTransportStore((s) => s.bpm);
   const running = useTransportStore((s) => s.running);
   const currentBeat = useTransportStore((s) => s.currentBeat);
@@ -38,7 +44,7 @@ export function TunerDesktop() {
     <>
       <div className="flex min-w-0 flex-col">
         <div className="flex items-center justify-between border-b-2 border-ink px-[22px] py-[14px] font-mono-rf text-[10px] tracking-[.14em] text-neutral-700">
-          <span>{tuning.toUpperCase()} · A4 = 440 HZ · CHROMATIC</span>
+          <span>{tuningLabel} · A4 = 440 HZ · CHROMATIC</span>
           <span>MIC LEVEL {Math.round(micLevel * 100)}%</span>
         </div>
 
@@ -140,6 +146,15 @@ export function TunerDesktop() {
         <div className="border-b-2 border-ink px-[18px] py-[14px] font-mono-rf text-[10px] tracking-[.14em] text-neutral-700">
           TUNINGS
         </div>
+        <div className="flex flex-col gap-2 border-b-2 border-ink p-[18px]">
+          <div className="font-mono-rf text-[10px] tracking-[.14em] text-neutral-700">TRANSPOSE</div>
+          <TransposeControl
+            semitoneShift={semitoneShift}
+            shiftLabel={shiftLabel}
+            onShift={shiftSemitones}
+            onReset={resetSemitoneShift}
+          />
+        </div>
         <div className="flex flex-col gap-[2px] p-[18px]">
           {TUNING_NAMES.map((name) => {
             const selected = name === tuning;
@@ -157,7 +172,7 @@ export function TunerDesktop() {
                     selected ? "text-white" : "text-neutral-700"
                   }`}
                 >
-                  {SPELLING[name]}
+                  {spell(name)}
                 </span>
               </button>
             );
