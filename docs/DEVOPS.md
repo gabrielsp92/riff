@@ -10,9 +10,8 @@ Runs on every push and pull request targeting `main`:
 
 1. **Lint & build** — `npm ci`, `npm run lint`, `npm test`, `npm run build`.
 2. **Deploy production** (pushes to `main` only, i.e. merged PRs) — once
-   job 1 passes,
-   deploys to Vercel production. Production deploys are serialized, never
-   cancelled mid-flight.
+   job 1 passes, deploys to Vercel production. Production deploys are
+   serialized, never cancelled mid-flight.
 
 Pull requests only run the checks; nothing is deployed until the PR is
 merged. A red CI run never deploys.
