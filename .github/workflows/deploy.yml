@@ -1,9 +1,19 @@
 name: Deploy (Vercel)
 
-# Manual trigger only: deploys are treated as an "apply" and must be
-# started explicitly from the Actions tab, never fired automatically
-# on push. See docs/DEVOPS.md for setup and the deploy runbook.
+# Reusable deploy job. Called automatically by ci.yml once lint/test/build
+# pass (preview for PRs, production for pushes to main), and can also be
+# dispatched by hand from the Actions tab to redeploy. See docs/DEVOPS.md.
 on:
+  workflow_call:
+    inputs:
+      environment:
+        description: "Target environment (production | preview)"
+        required: true
+        type: string
+    outputs:
+      url:
+        description: "Deployment URL"
+        value: ${{ jobs.deploy.outputs.url }}
   workflow_dispatch:
     inputs:
       environment:
@@ -17,10 +27,30 @@ on:
 
 jobs:
   deploy:
-    name: Build & deploy to Vercel
+    name: Deploy to Vercel (${{ inputs.environment }})
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment }}
+    environment:
+      name: ${{ inputs.environment }}
+      url: ${{ steps.deploy.outputs.url }}
+    outputs:
+      url: ${{ steps.deploy.outputs.url }}
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      PROD_FLAG: ${{ inputs.environment == 'production' && '--prod' || '' }}
     steps:
+      - name: Check Vercel secrets
+        run: |
+          missing=""
+          for name in VERCEL_TOKEN VERCEL_ORG_ID VERCEL_PROJECT_ID; do
+            [ -z "${!name}" ] && missing="$missing $name"
+          done
+          if [ -n "$missing" ]; then
+            echo "::error::Missing repo secrets:$missing. See docs/DEVOPS.md → One-time setup."
+            exit 1
+          fi
+
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -34,25 +64,14 @@ jobs:
         run: npm install --global vercel@latest
 
       - name: Pull Vercel environment config
-        run: |
-          if [ "${{ inputs.environment }}" = "production" ]; then
-            vercel pull --yes --environment=production --token="${{ secrets.VERCEL_TOKEN }}"
-          else
-            vercel pull --yes --environment=preview --token="${{ secrets.VERCEL_TOKEN }}"
-          fi
+        run: vercel pull --yes --environment=${{ inputs.environment }} --token="$VERCEL_TOKEN"
 
       - name: Build with Vercel CLI
-        run: |
-          if [ "${{ inputs.environment }}" = "production" ]; then
-            vercel build --prod --token="${{ secrets.VERCEL_TOKEN }}"
-          else
-            vercel build --token="${{ secrets.VERCEL_TOKEN }}"
-          fi
+        run: vercel build $PROD_FLAG --token="$VERCEL_TOKEN"
 
       - name: Deploy to Vercel
+        id: deploy
         run: |
-          if [ "${{ inputs.environment }}" = "production" ]; then
-            vercel deploy --prebuilt --prod --token="${{ secrets.VERCEL_TOKEN }}"
-          else
-            vercel deploy --prebuilt --token="${{ secrets.VERCEL_TOKEN }}"
-          fi
+          url=$(vercel deploy --prebuilt $PROD_FLAG --token="$VERCEL_TOKEN")
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          echo "Deployed ${{ inputs.environment }}: $url" >> "$GITHUB_STEP_SUMMARY"

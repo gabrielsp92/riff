@@ -31,3 +31,17 @@ jobs:
 
       - name: Build
         run: npm run build
+
+  # Production deploy when a PR is merged (push to main), only after CI passes.
+  # PRs themselves never deploy.
+  deploy-production:
+    name: Deploy production
+    needs: lint-and-build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    concurrency:
+      group: production
+      cancel-in-progress: false
+    uses: ./.github/workflows/deploy.yml
+    with:
+      environment: production
+    secrets: inherit

@@ -2,18 +2,19 @@
 
 Infrastructure and delivery pipeline for RIFF. RIFF is a client-only PWA
 (no backend, no database), so the pipeline is deliberately small: verify
-the build, then let a human trigger a deploy.
+the build, then deploy to Vercel automatically.
 
-## CI — `.github/workflows/ci.yml`
+## CI/CD — `.github/workflows/ci.yml`
 
-Runs automatically on every push and pull request targeting `main`:
+Runs on every push and pull request targeting `main`:
 
-1. `npm ci`
-2. `npm run lint`
-3. `npm test` (Vitest, see below)
-4. `npm run build`
+1. **Lint & build** — `npm ci`, `npm run lint`, `npm test`, `npm run build`.
+2. **Deploy production** (pushes to `main` only, i.e. merged PRs) — once
+   job 1 passes, deploys to Vercel production. Production deploys are
+   serialized, never cancelled mid-flight.
 
-This is check-only. It never deploys and needs no secrets.
+Pull requests only run the checks; nothing is deployed until the PR is
+merged. A red CI run never deploys.
 
 ## Tests — Vitest
 
@@ -30,43 +31,39 @@ npm test
 
 ## Deploy — `.github/workflows/deploy.yml`
 
-Deploys to [Vercel](https://vercel.com) using the Vercel CLI. Trigger:
-**manual only** (`workflow_dispatch` from the Actions tab). It never runs
-on push, including to `main` — a deploy is an "apply" and should be a
-deliberate, human-initiated action, not a side effect of merging.
+Reusable workflow that ci.yml calls for production deploys. It uses
+the Vercel CLI: `vercel pull` → `vercel build` → `vercel deploy --prebuilt`.
+It can also be dispatched by hand (Actions tab → **Deploy (Vercel)** → **Run
+workflow**) to redeploy any branch to `production` or `preview`.
 
-Steps in the job: `vercel pull` → `vercel build` → `vercel deploy --prebuilt`,
-against either the `production` or `preview` environment, chosen when the
-workflow is dispatched.
+`vercel.json` sets `git.deploymentEnabled: false` so Vercel's own Git
+integration never deploys on its own. All deploys go through GitHub Actions
+behind the CI gate.
 
 ### One-time setup (required before first deploy)
 
-Someone with a Vercel account needs to do this once; none of it can be
-done from CI itself:
+Someone with a Vercel account needs to do this once:
 
-1. Create a Vercel account/team if one doesn't exist, and install the
-   [Vercel CLI](https://vercel.com/docs/cli) locally.
-2. From the repo root, run `vercel link` and follow the prompts to create
-   or link a Vercel project for RIFF.
-3. Generate a Vercel access token: Vercel dashboard → **Settings → Tokens**.
-4. After `vercel link`, read `.vercel/project.json` for `orgId` and
-   `projectId`.
-5. In the GitHub repo, go to **Settings → Secrets and variables →
-   Actions** and add:
+1. Install the [Vercel CLI](https://vercel.com/docs/cli) and log in:
+   `npm i -g vercel && vercel login`.
+2. From the repo root, run `vercel link` and create or link a Vercel
+   project for RIFF (framework: Next.js, default settings).
+3. Read `.vercel/project.json` for `orgId` and `projectId` (the file is
+   gitignored).
+4. Generate a Vercel access token: Vercel dashboard → **Account Settings →
+   Tokens**.
+5. Add three GitHub Actions secrets (**Settings → Secrets and variables →
+   Actions**, or `gh secret set <NAME>`):
    - `VERCEL_TOKEN`
    - `VERCEL_ORG_ID`
    - `VERCEL_PROJECT_ID`
-6. Optional but recommended: create GitHub **Environments** named
-   `production` and `preview` (**Settings → Environments**) and add
-   required reviewers to `production`. The deploy workflow already
-   references `environment: ${{ inputs.environment }}`, so once the
-   environment exists, GitHub will hold the run for approval before it
-   deploys — a second confirmation gate on top of the manual trigger.
 
-### Running a deploy
+If a secret is missing, the deploy job fails immediately with an error
+naming it.
 
-GitHub → **Actions** tab → **Deploy (Vercel)** → **Run workflow** → choose
-`production` or `preview`.
+GitHub creates the `preview` and `production` Environments on first deploy.
+To require approval before production goes out, add required reviewers to
+the `production` environment (**Settings → Environments**).
 
 ## Local dev server
 
