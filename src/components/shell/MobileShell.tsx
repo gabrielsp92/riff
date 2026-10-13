@@ -16,7 +16,7 @@ export function MobileShell({
   const active = TOOLS.find((t) => t.id === tool)!;
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-[560px] flex-col bg-bg">
+    <div className="mx-auto flex min-h-dvh w-full max-w-[560px] flex-col bg-bg pb-[calc(46px+env(safe-area-inset-bottom))]">
       <header className="flex items-center justify-between border-b-2 border-ink px-[18px] py-4">
         <span className="font-sans text-[22px] font-black leading-none tracking-[-.03em]">RIFF</span>
         <span
@@ -37,7 +37,7 @@ export function MobileShell({
         )}
       </main>
 
-      <nav className="grid grid-cols-5 border-t-2 border-ink">
+      <nav className="fixed inset-x-0 bottom-0 z-40 mx-auto grid w-full max-w-[560px] grid-cols-5 border-t-2 border-ink bg-bg pb-[env(safe-area-inset-bottom)]">
         {TOOLS.map((t, i) => (
           <button
             key={t.id}
