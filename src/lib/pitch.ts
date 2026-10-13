@@ -1,7 +1,15 @@
+// Low enough for a softly plucked high E string (thin, quiet, fast decay) with AGC off.
+const MIN_RMS = 0.003;
+// Overlap-normalized autocorrelation at the detected period vs. lag 0; noise scores well below this.
+const MIN_CLARITY = 0.8;
+// Covers every tuning shifted ±12 semitones, and rejects noise-driven outliers.
+const MIN_FREQ = 30;
+const MAX_FREQ = 1500;
+
 /**
  * Autocorrelation pitch detector (ACF2+), after Chris Wilson's reference
- * implementation. Returns -1 when the signal is too quiet or no clear
- * periodicity is found.
+ * implementation. Returns -1 when the signal is too quiet, no clear
+ * periodicity is found, or the result is outside the instrument range.
  */
 export function autoCorrelate(buf: Float32Array, sampleRate: number): number {
   const SIZE = buf.length;
@@ -12,7 +20,7 @@ export function autoCorrelate(buf: Float32Array, sampleRate: number): number {
     rms += val * val;
   }
   rms = Math.sqrt(rms / SIZE);
-  if (rms < 0.01) return -1;
+  if (rms < MIN_RMS) return -1;
 
   let r1 = 0;
   let r2 = SIZE - 1;
@@ -54,6 +62,9 @@ export function autoCorrelate(buf: Float32Array, sampleRate: number): number {
   }
   if (maxpos <= 0 || maxpos >= newSize - 1) return -1;
 
+  const clarity = c[maxpos] / (newSize - maxpos) / (c[0] / newSize);
+  if (clarity < MIN_CLARITY) return -1;
+
   let T0 = maxpos;
   const x1 = c[T0 - 1];
   const x2 = c[T0];
@@ -63,7 +74,9 @@ export function autoCorrelate(buf: Float32Array, sampleRate: number): number {
   if (a) T0 = T0 - b / (2 * a);
 
   if (T0 <= 0) return -1;
-  return sampleRate / T0;
+  const freq = sampleRate / T0;
+  if (freq < MIN_FREQ || freq > MAX_FREQ) return -1;
+  return freq;
 }
 
 /** RMS amplitude of each of `segments` equal slices of a time-domain buffer, 0..1. */
