@@ -19,6 +19,8 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "RIFF — Practice",
   description: "RIFF is a tuner-first practice app: tuner and metronome, tuned for the floor next to your amp.",
+  applicationName: "RIFF",
+  appleWebApp: { capable: true, title: "RIFF", statusBarStyle: "default" },
 };
 
 export const viewport: Viewport = {
