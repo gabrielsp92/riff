@@ -4,6 +4,14 @@ import { useCallback, useEffect, useRef } from "react";
 import { autoCorrelate, segmentedRms } from "@/lib/pitch";
 import { noteFromFrequency } from "@/lib/music";
 import { useTunerStore } from "@/lib/store";
+import {
+  MicPermissionState,
+  clearMicGrantedFlag,
+  decideMicAutoStart,
+  getMicGrantedFlag,
+  getMicPermissionStatus,
+  setMicGrantedFlag,
+} from "@/lib/micPermission";
 
 const HOLD_MS = 2000;
 const UPDATE_INTERVAL_MS = 50; // ~20Hz, per the interaction spec
@@ -13,8 +21,9 @@ type AudioContextCtor = typeof AudioContext;
 /**
  * Owns the mic stream + analysis loop for the tuner. Mounted only while the
  * Tuner screen is active, so the browser's mic indicator only lights up
- * there. Auto-resumes without re-prompting if permission was already
- * granted earlier in the session.
+ * there. On mount it auto-starts the mic (skipping the in-app gate) when the
+ * browser reports the permission as granted, or — where the Permissions API
+ * can't tell (older iOS) — when a previous launch was granted.
  */
 export function useTuner() {
   const a4 = useTunerStore((s) => s.a4);
@@ -84,23 +93,69 @@ export function useTuner() {
         (window as unknown as { webkitAudioContext: AudioContextCtor }).webkitAudioContext;
       const ctx = new AC();
       ctxRef.current = ctx;
+      // Auto-started (no user gesture) contexts begin suspended on iOS.
+      if (ctx.state === "suspended") {
+        ctx.resume().catch(() => {});
+        const resumeOnTouch = () => {
+          ctxRef.current?.resume().catch(() => {});
+        };
+        window.addEventListener("pointerdown", resumeOnTouch, { once: true });
+      }
       const source = ctx.createMediaStreamSource(stream);
       const analyser = ctx.createAnalyser();
       analyser.fftSize = 2048;
       source.connect(analyser);
       analyserRef.current = analyser;
+      setMicGrantedFlag();
       useTunerStore.getState().setPermission("granted");
       rafRef.current = requestAnimationFrame(() => loopRef.current());
     } catch {
+      clearMicGrantedFlag();
       useTunerStore.getState().setPermission("denied");
     }
   }, []);
 
   useEffect(() => {
-    if (useTunerStore.getState().permission === "granted") {
-      requestMic();
-    }
-    return () => teardown();
+    let cancelled = false;
+    let status: PermissionStatus | null = null;
+    const onChange = () => {
+      if (!status) return;
+      if (status.state === "denied") {
+        clearMicGrantedFlag();
+        teardown();
+        useTunerStore.getState().setPermission("denied");
+      } else if (
+        status.state === "granted" &&
+        !streamRef.current &&
+        useTunerStore.getState().permission !== "requesting"
+      ) {
+        requestMic();
+      }
+    };
+
+    (async () => {
+      // Already running from earlier in this session.
+      if (useTunerStore.getState().permission === "granted") {
+        requestMic();
+        return;
+      }
+      status = await getMicPermissionStatus();
+      if (cancelled) return;
+      status?.addEventListener("change", onChange);
+      const state = status ? ((status.state as MicPermissionState) ?? "unknown") : "unknown";
+      const decision = decideMicAutoStart(state, getMicGrantedFlag());
+      if (decision === "start") requestMic();
+      else if (decision === "denied") {
+        clearMicGrantedFlag();
+        useTunerStore.getState().setPermission("denied");
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+      status?.removeEventListener("change", onChange);
+      teardown();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
